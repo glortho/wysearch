@@ -200,11 +200,11 @@ var dic = {
 				
 					$(".votes").hoverIntent({
 						over: function() {
-							dic.vote_action_show($(this));
+							dic.vote.view.action($(this));
 						},
 						interval: 80 ,
 						out: function() {
-							dic.vote_show($(this));
+							dic.vote.view.show($(this));
 						},
 						timeout: 80
 					}) ;
@@ -333,11 +333,7 @@ var dic = {
 			}
 		}
 	},
-	
-	ischinese: function( term ) {
-		return ( term.match(/[a-z]/gi) == null ? true : false ) ;
-	},
-	
+		
 	prefs: {
 		
 		apply: function() {
@@ -647,6 +643,10 @@ var dic = {
 				return out ;
 			}
 			
+			function ischinese( term ) {
+				return ( term.match(/[a-z]/gi) == null ? true : false ) ;
+			}
+			
 			function search_dictionary( term , options ) {
 		
 				//alert( "q=" + term + options ) ;
@@ -787,7 +787,7 @@ var dic = {
 					
 					//search internet sources (may need to put this back in search_dictionary before dic.binding.init())
 					
-					if ( dic.ischinese( term ) ) {
+					if ( ischinese( term ) ) {
 	
 						this.google( "zdic.net", term , 0 ) ;
 						this.google( "nciku.com", term , 0 ) ;
@@ -923,7 +923,7 @@ var dic = {
 			var htm = 
 				"<div class='details'>" +
 					"Include as much info as you can about the text or context that led you to vote this way.<br/>" +
-					"<form action='' method='post' onsubmit='javascript:dic.vote_post(" + id + "," + dir + "); return false;'>" +
+					"<form action='' method='post' onsubmit='javascript:dic.vote.submit(" + id + "," + dir + "); return false;'>" +
 						"<div class='label'>Nickname</div><div class='field'><input id='context_nickname' name='context_nickname' type='text' size='50'value='nldz'/></div><br>" +
 						"<div class='label'>Title</div><div class='field'><input id='context_title' name='context_title' type='text' size='50'/></div><br>" +
 						"<div class='label'>Author</div><div class='field'><input id='context_author' name='context_author' type='text' size='50'/></div><br>" +
@@ -946,99 +946,103 @@ var dic = {
 				scroll: false
 			}).result(function(event,data,formatted){alert(data.id)});
 			*/
-		}
-	},
-	
-	vote_action_show: function( el ) {
-		dic.vote_count = el.children(".vote_count") ;
-		dic.vote_count.replaceWith("<span class='vote_buttons'><a class='vote' href='#' onclick='dic.vote.go(this,\"1\");return false'>Up</a> | <a class='vote' href='#' onclick='dic.vote.go(this,\"-1\");return false'>Down</a> | <a class='vote' href='#' onclick='dic.vote_info(this);return false'>Info...</a></span>" ) ;
-	},
-	
-	vote_info: function( el ) {
-		var id = $(el).closest(".votes").prev(".definition").attr("id") ;
-		$.post( "./hyperactive.php" , {
-			flag: "vote_info" ,
-			definition_id: id 
-			},
-			function( data ) {
-				$.facebox( data ) ;
-			}
-		);
-	},
-	
-	vote_post: function( id , dir ) {
+		},
 		
-		$.post( "./hyperactive.php" , {
-			flag:"vote",
-			id: id,
-			dir: dir,
-			cn: $('#context_nickname').val(),
-			ct: $('#context_title').val(),
-			ca: $('#context_author').val(),
-			cs: $('#context_sect').val(),
-			cg: $('#context_genre').val(),
-			cd: $('#context_date').val(),
-			cp: $('#context_page').val(),
-			cnt: $('#context_notes').val()
-			} , 
-			function( data ) {
-								
-				$(document).trigger('close.facebox') ;
-				
-				var targel = $("#" + id ).next() ;
-				dic.vote_show( targel ) ;
-				
-				// dynamically increment displayed vote count
-				
-				var targel = targel.children(".vote_count") ;
-				var old_votes = targel.html() ;
-				var new_votes = Number(old_votes) + Number(dir) ;
-				
-				// move incremented row to new place relevant to other votes
-				// TODO: change this so that it looks up if incrementing and down if decrementing
-				// and fix the check for self
-				
-				var tr = targel.closest("tr") ;
-				var trfirst = tr.prevAll(".term_row:first") ;
-				if ( tr.nextAll('.term_row:first').length > 0 ) {
-					var trend = tr.nextAll('.term_row:first') ;
-				} else {
-					var trend = tr.nextAll('tr:last') ;
+		info_get: function( el ) {
+			var id = $(el).closest(".votes").prev(".definition").attr("id") ;
+			$.post( "./hyperactive.php" , {
+				flag: "vote_info" ,
+				definition_id: id 
+				},
+				function( data ) {
+					$.facebox( data ) ;
 				}
-				trend = trend.html() ;
-				
-				var i = 0 ;
-				do {
-					trcheck = trfirst.nextAll("tr").eq(i) ;
-					trcount = trcheck.find(".vote_count").html() ;
-					if ( Number(trcount) <= new_votes ) {
-						i = -1 ;
-					} else {
-						i++ ;
-					}
-				} while ( trcheck.html() != trend && i > -1 ) ;
-				
-				if ( trcheck.html() != tr.html() ) {
-					
-					tr.fadeOut("slow", function() {
-						$(this).children(".def_spacer").children(".delete").remove() ;
-						$(this).find(".votes").hide() ;
-						$(this).insertBefore( trcheck ).find(".vote_count").html(new_votes).end().fadeIn() ;
-					}) ;
-					
-				} else {
-					
-					tr.find(".vote_count").html(new_votes) ;
-					
-				}
+			);
+		},
+		
+		submit: function( id , dir ) {
+		
+			$.post( "./hyperactive.php" , {
+				flag:"vote",
+				id: id,
+				dir: dir,
+				cn: $('#context_nickname').val(),
+				ct: $('#context_title').val(),
+				ca: $('#context_author').val(),
+				cs: $('#context_sect').val(),
+				cg: $('#context_genre').val(),
+				cd: $('#context_date').val(),
+				cp: $('#context_page').val(),
+				cnt: $('#context_notes').val()
+				} , 
+				function( data ) {
 									
-				// TODO: show new number for a moment in targel
+					$(document).trigger('close.facebox') ;
+					
+					var targel = $("#" + id ).next() ;
+					this.view.show( targel ) ;
+					
+					// dynamically increment displayed vote count
+					
+					var targel = targel.children(".vote_count") ;
+					var old_votes = targel.html() ;
+					var new_votes = Number(old_votes) + Number(dir) ;
+					
+					// move incremented row to new place relevant to other votes
+					// TODO: change this so that it looks up if incrementing and down if decrementing
+					// and fix the check for self
+					
+					var tr = targel.closest("tr") ;
+					var trfirst = tr.prevAll(".term_row:first") ;
+					if ( tr.nextAll('.term_row:first').length > 0 ) {
+						var trend = tr.nextAll('.term_row:first') ;
+					} else {
+						var trend = tr.nextAll('tr:last') ;
+					}
+					trend = trend.html() ;
+					
+					var i = 0 ;
+					do {
+						trcheck = trfirst.nextAll("tr").eq(i) ;
+						trcount = trcheck.find(".vote_count").html() ;
+						if ( Number(trcount) <= new_votes ) {
+							i = -1 ;
+						} else {
+							i++ ;
+						}
+					} while ( trcheck.html() != trend && i > -1 ) ;
+					
+					if ( trcheck.html() != tr.html() ) {
+						
+						tr.fadeOut("slow", function() {
+							$(this).children(".def_spacer").children(".delete").remove() ;
+							$(this).find(".votes").hide() ;
+							$(this).insertBefore( trcheck ).find(".vote_count").html(new_votes).end().fadeIn() ;
+						}) ;
+						
+					} else {
+						
+						tr.find(".vote_count").html(new_votes) ;
+						
+					}
+										
+					// TODO: show new number for a moment in targel
+				}
+			);
+		},
+		
+		view: {
+		
+			action: function( el ) {
+				dic.vote_count = el.children(".vote_count") ;
+				dic.vote_count.replaceWith("<span class='vote_buttons'><a class='vote' href='#' onclick='dic.vote.go(this,\"1\");return false'>Up</a> | <a class='vote' href='#' onclick='dic.vote.go(this,\"-1\");return false'>Down</a> | <a class='vote' href='#' onclick='dic.vote.info_get(this);return false'>Info...</a></span>" ) ;
+			},
+			
+			show: function( el ) {
+				el.children(".vote_buttons").replaceWith(dic.vote_count) ;
 			}
-		);
-	},
-	
-	vote_show: function( el ) {
-		el.children(".vote_buttons").replaceWith(dic.vote_count) ;
+		
+		}
 	},
 
 	init: function() {
