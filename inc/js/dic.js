@@ -9,7 +9,7 @@ var dic = {
 			
 			add_buttons: function() {
 				$('#submit_def').click( 
-					function() { dic.edit.submit_def( this ) }
+					function() { dic.definition.edit.submit_def( this ) }
 				) ;
 				$('#cancel_def').click( function() { $('#new').remove() ; } );
 			},
@@ -48,7 +48,7 @@ var dic = {
 				el.bind( "click" , function() {
 					if ( dic.keydown.command == true ) { 
 						$(this).unbind("click") ;
-						dic.edit.make_editable( $(this) ) ;
+						dic.definition.edit.make_editable( $(this) ) ;
 					}
 				}) ;
 			},
@@ -72,7 +72,7 @@ var dic = {
 				var id = el.attr("id") ;
 
 				el.children("input[name=submit_edit]").click( function() {
-					dic.edit.submit_edit( id ) ; 
+					dic.definition.edit.submit_edit( id ) ; 
 				}) ;
 
 				el.children("input[name=cancel]").click( function() {
@@ -118,7 +118,7 @@ var dic = {
 							var y = $(this).closest('.label').offset().top - 50 ;
 							$(this).append("<a class='addspan' href='#'><img onclick='dic.kill_click=true' align='middle' src='./images/add-icon.png' width='20' height='20' /></a>" ) ;
 							$('.addspan').css({ "left": x , "top": y }).click( function() {
-								dic.edit.add_new($(this)) ;
+								dic.definition.edit.add_new($(this)) ;
 							});
 						},
 						interval: 200 ,
@@ -138,7 +138,7 @@ var dic = {
 				
 					$('td.def').parent().hoverIntent({
 						over: function() {
-							$(this).children(".def_spacer").append("<img onclick='dic.edit.delete_def(this)' class='delete' align='right' src='./images/delete-icon.png' height='16' width='16' />") ;
+							$(this).children(".def_spacer").append("<img onclick='dic.definition.edit.delete_def(this)' class='delete' align='right' src='./images/delete-icon.png' height='16' width='16' />") ;
 							$(this).find(".votes").show() ;
 	
 						},
@@ -200,11 +200,11 @@ var dic = {
 				
 					$(".votes").hoverIntent({
 						over: function() {
-							dic.vote.view.action($(this));
+							dic.definition.vote.view.action($(this));
 						},
 						interval: 80 ,
 						out: function() {
-							dic.vote.view.show($(this));
+							dic.definition.vote.view.show($(this));
 						},
 						timeout: 80
 					}) ;
@@ -241,80 +241,215 @@ var dic = {
 		return false ;
 	},
 	
-	edit: {
+	definition: {
 	
-		add_new: function( el ) {
-			var val = $('#term').val() ;
-			var htm = 
-				"<div class='new'>" +
-					"<form action='' method='post' onsubmit='javascript:dic.edit.post_new(); return false;'>" +
-						"<div class='label'>Term</div><div class='field'><input id='term_new' name='term' type='text' size='50' value='" + val + "'></div><br>" +
-						"<div class='label'>Def</div><div class='field'><input id='def_new' name='def' type='text' size='50'></div><br>" +
-						"<div class='label'>Source</div><div class='field'><input id='source_new' name='source' type='text' size='8'></div><br>" +
-						"<div class='label'><input id='submit_new' name='submit_new' type='submit' value='done'></div>"
-					"</form>" + 
-				"</div>" ;
-			$.facebox( htm ) ;
-			$('#term_new').focus() ;
-			dic.selectedInput = $('#term_new') ;
-		},
+		edit: {
 	
-		delete_def: function( el ) {
-			if( confirm("Are you sure you want to delete this definition?") ) {
-				var id = $(el).parent().next().children(".definition").attr("id");
-				$.post( "./hyperactive.php" , { flag: "delete_definition" , id: id } , function( data ) {
-					$(el).closest("tr").fadeOut("slow", function() {
-						$(this).remove() ;
+			add_new: function( el ) {
+				var val = $('#term').val() ;
+				var htm = 
+					"<div class='new'>" +
+						"<form action='' method='post' onsubmit='javascript:dic.definition.edit.post_new(); return false;'>" +
+							"<div class='label'>Term</div><div class='field'><input id='term_new' name='term' type='text' size='50' value='" + val + "'></div><br>" +
+							"<div class='label'>Def</div><div class='field'><input id='def_new' name='def' type='text' size='50'></div><br>" +
+							"<div class='label'>Source</div><div class='field'><input id='source_new' name='source' type='text' size='8'></div><br>" +
+							"<div class='label'><input id='submit_new' name='submit_new' type='submit' value='done'></div>"
+						"</form>" + 
+					"</div>" ;
+				$.facebox( htm ) ;
+				$('#term_new').focus() ;
+				dic.selectedInput = $('#term_new') ;
+			},
+		
+			delete_def: function( el ) {
+				if( confirm("Are you sure you want to delete this definition?") ) {
+					var id = $(el).parent().next().children(".definition").attr("id");
+					$.post( "./hyperactive.php" , { flag: "delete_definition" , id: id } , function( data ) {
+						$(el).closest("tr").fadeOut("slow", function() {
+							$(this).remove() ;
+						}) ;
 					}) ;
+				}
+			},
+			
+			make_editable: function( el ) {
+				var htm = el.html() ;
+				var x = 90 ; //$(this).width()/6 ;
+				var y = el.parent().height()/9 ;
+				y = ( y < 2 ) ? 2 : y ;
+				var htm_new = "<textarea id='edit_old' rows=" + y + " cols=" + x + ">" + htm + "</textarea><br><input name='submit_edit' style='position:relative; bottom:0px; left:26px' type='button' value='done'> <input name='cancel' style='position:relative; bottom:0px; left: 25px' type='button' value='cancel'>" ;
+		
+				el.html( htm_new ) ;
+				$('#edit_old').focus() ; 
+				dic.selectedInput = $('#edit_old') ;
+		
+				dic.binding.clicks.edit_buttons( el ) ;
+			},
+			
+			post_new: function() {
+				var term = $('#term_new').val() ;
+				var def = $('#def_new').val() ;
+				var source = $('#source_new').val() ;
+				var flag = "new" ;
+				$.post( "./hyperactive.php" , { flag: flag , term: term , def: def , source: source } , function( data ) {
+					if ( data != "" ) {
+						$('.new').html( data ) ;
+					} else {
+						$(document).trigger('close.facebox') ;
+					}
+					$('#term').val( term ) ;
+					dic.search.go() ;
+				}) ;
+				return false ;
+			},
+	
+			submit_def: function( el ) {
+				var flag = "new_sub" ;
+				var id = $(el).closest("tr").prevAll(".term_row:first").children("td").attr("id") ;
+				$.post( './hyperactive.php' , { flag: flag , term_id: id , def: $('#def_new').val() } , function( data ) {
+					dic.search.go() ;
+				})
+			},
+			
+			submit_edit: function( id ) {
+				var flag = "edit" ;
+				$.post( "./hyperactive.php" , { flag: flag , id: id , def: $('#edit_old').val() } , function( data ) {
+					$("#" + id ).html( data ) ;
+					dic.binding.clicks.def( $("#" + id) ) ;
 				}) ;
 			}
+		
 		},
 		
-		make_editable: function( el ) {
-			var htm = el.html() ;
-			var x = 90 ; //$(this).width()/6 ;
-			var y = el.parent().height()/9 ;
-			y = ( y < 2 ) ? 2 : y ;
-			var htm_new = "<textarea id='edit_old' rows=" + y + " cols=" + x + ">" + htm + "</textarea><br><input name='submit_edit' style='position:relative; bottom:0px; left:26px' type='button' value='done'> <input name='cancel' style='position:relative; bottom:0px; left: 25px' type='button' value='cancel'>" ;
+		vote: {
 	
-			el.html( htm_new ) ;
-			$('#edit_old').focus() ; 
-			dic.selectedInput = $('#edit_old') ;
-	
-			dic.binding.clicks.edit_buttons( el ) ;
-		},
-		
-		post_new: function() {
-			var term = $('#term_new').val() ;
-			var def = $('#def_new').val() ;
-			var source = $('#source_new').val() ;
-			var flag = "new" ;
-			$.post( "./hyperactive.php" , { flag: flag , term: term , def: def , source: source } , function( data ) {
-				if ( data != "" ) {
-					$('.new').html( data ) ;
-				} else {
-					$(document).trigger('close.facebox') ;
+			go: function( el, dir ) {
+				var def = $(el).closest(".votes").prev(".definition")
+				id = def.attr("id") ;
+				def = def.html() ;
+				var htm = 
+					"<div class='details'>" +
+						"Include as much info as you can about the text or context that led you to vote this way.<br/>" +
+						"<form action='' method='post' onsubmit='javascript:dic.definition.vote.submit(" + id + "," + dir + "); return false;'>" +
+							"<div class='label'>Nickname</div><div class='field'><input id='context_nickname' name='context_nickname' type='text' size='50'value='nldz'/></div><br>" +
+							"<div class='label'>Title</div><div class='field'><input id='context_title' name='context_title' type='text' size='50'/></div><br>" +
+							"<div class='label'>Author</div><div class='field'><input id='context_author' name='context_author' type='text' size='50'/></div><br>" +
+							"<div class='label'>Sect</div><div class='field'><input id='context_sect' name='context_sect' type='text' size='50'/></div><br>" +
+							"<div class='label'>Text Genre</div><div class='field'><input id='context_genre' name='context_genre' type='text' size='50'/></div><br>" +
+							"<div class='label'>Date or Time Period</div><div class='field'><input id='context_date' name='context_date' type='text' size='20' value=''/></div><br>" +
+							"<div class='label'>Page.line</div><div class='field'><input id='context_page' name='context_page' type='text' size='10'/></div><br>" +
+							"<div class='label'>Note</div><div class='field'><textarea rows='3' cols='40' name='context_notes' id='context_notes'>" + def + "</textarea></div><br>" +
+							"<div class='label'><input id='submit_new' name='submit_new' type='submit' value='done'/></div>" +
+						"</form>" + 
+					"</div>";
+				$.facebox(htm) ;
+				$("#context_nickname").focus() ;
+					
+				/* autocomplete later
+				
+				$("#context_nickname").focus().autocomplete("./hyperactive.php?flag=ac_nickname", {
+					matchContains: true,
+					width: 200,
+					scroll: false
+				}).result(function(event,data,formatted){alert(data.id)});
+				*/
+			},
+			
+			info_get: function( el ) {
+				var id = $(el).closest(".votes").prev(".definition").attr("id") ;
+				$.post( "./hyperactive.php" , {
+					flag: "vote_info" ,
+					definition_id: id 
+					},
+					function( data ) {
+						$.facebox( data ) ;
+					}
+				);
+			},
+			
+			submit: function( id , dir ) {
+			
+				$.post( "./hyperactive.php" , {
+					flag:"vote",
+					id: id,
+					dir: dir,
+					cn: $('#context_nickname').val(),
+					ct: $('#context_title').val(),
+					ca: $('#context_author').val(),
+					cs: $('#context_sect').val(),
+					cg: $('#context_genre').val(),
+					cd: $('#context_date').val(),
+					cp: $('#context_page').val(),
+					cnt: $('#context_notes').val()
+					} , 
+					function( data ) {
+										
+						$(document).trigger('close.facebox') ;
+						
+						var targel = $("#" + id ).next() ;
+						this.view.show( targel ) ;
+						
+						// dynamically increment displayed vote count
+						
+						var targel = targel.children(".vote_count") ;
+						var old_votes = targel.html() ;
+						var new_votes = Number(old_votes) + Number(dir) ;
+						
+						// move incremented row to new place relevant to other votes
+						// TODO: change this so that it looks up if incrementing and down if decrementing
+						// and fix the check for self
+						
+						var tr = targel.closest("tr") ;
+						var trfirst = tr.prevAll(".term_row:first") ;
+						if ( tr.nextAll('.term_row:first').length > 0 ) {
+							var trend = tr.nextAll('.term_row:first') ;
+						} else {
+							var trend = tr.nextAll('tr:last') ;
+						}
+						trend = trend.html() ;
+						
+						var i = 0 ;
+						do {
+							trcheck = trfirst.nextAll("tr").eq(i) ;
+							trcount = trcheck.find(".vote_count").html() ;
+							if ( Number(trcount) <= new_votes ) {
+								i = -1 ;
+							} else {
+								i++ ;
+							}
+						} while ( trcheck.html() != trend && i > -1 ) ;
+						
+						if ( trcheck.html() != tr.html() ) {
+							
+							tr.fadeOut("slow", function() {
+								$(this).children(".def_spacer").children(".delete").remove() ;
+								$(this).find(".votes").hide() ;
+								$(this).insertBefore( trcheck ).find(".vote_count").html(new_votes).end().fadeIn() ;
+							}) ;
+							
+						} else {
+							
+							tr.find(".vote_count").html(new_votes) ;
+							
+						}
+											
+						// TODO: show new number for a moment in targel
+					}
+				);
+			},
+			
+			view: {
+			
+				action: function( el ) {
+					dic.vote_count = el.children(".vote_count") ;
+					dic.vote_count.replaceWith("<span class='vote_buttons'><a class='vote' href='#' onclick='dic.definition.vote.go(this,\"1\");return false'>Up</a> | <a class='vote' href='#' onclick='dic.definition.vote.go(this,\"-1\");return false'>Down</a> | <a class='vote' href='#' onclick='dic.definition.vote.info_get(this);return false'>Info...</a></span>" ) ;
+				},
+				
+				show: function( el ) {
+					el.children(".vote_buttons").replaceWith(dic.vote_count) ;
 				}
-				$('#term').val( term ) ;
-				dic.search.go() ;
-			}) ;
-			return false ;
-		},
-
-		submit_def: function( el ) {
-			var flag = "new_sub" ;
-			var id = $(el).closest("tr").prevAll(".term_row:first").children("td").attr("id") ;
-			$.post( './hyperactive.php' , { flag: flag , term_id: id , def: $('#def_new').val() } , function( data ) {
-				dic.search.go() ;
-			})
-		},
-		
-		submit_edit: function( id ) {
-			var flag = "edit" ;
-			$.post( "./hyperactive.php" , { flag: flag , id: id , def: $('#edit_old').val() } , function( data ) {
-				$("#" + id ).html( data ) ;
-				dic.binding.clicks.def( $("#" + id) ) ;
-			}) ;
+			
+			}
 		}
 	
 	},
@@ -911,137 +1046,6 @@ var dic = {
 				$.facebox("Select a dictionary, my friend.") ; //$.facebox( {ajax:"http://localhost/~jed/dic/hyperactive.php?flag=source_list"} ) ;
 			}
 			return false ;
-		}
-	},
-
-	vote: {
-	
-		go: function( el, dir ) {
-			var def = $(el).closest(".votes").prev(".definition")
-			id = def.attr("id") ;
-			def = def.html() ;
-			var htm = 
-				"<div class='details'>" +
-					"Include as much info as you can about the text or context that led you to vote this way.<br/>" +
-					"<form action='' method='post' onsubmit='javascript:dic.vote.submit(" + id + "," + dir + "); return false;'>" +
-						"<div class='label'>Nickname</div><div class='field'><input id='context_nickname' name='context_nickname' type='text' size='50'value='nldz'/></div><br>" +
-						"<div class='label'>Title</div><div class='field'><input id='context_title' name='context_title' type='text' size='50'/></div><br>" +
-						"<div class='label'>Author</div><div class='field'><input id='context_author' name='context_author' type='text' size='50'/></div><br>" +
-						"<div class='label'>Sect</div><div class='field'><input id='context_sect' name='context_sect' type='text' size='50'/></div><br>" +
-						"<div class='label'>Text Genre</div><div class='field'><input id='context_genre' name='context_genre' type='text' size='50'/></div><br>" +
-						"<div class='label'>Date or Time Period</div><div class='field'><input id='context_date' name='context_date' type='text' size='20' value=''/></div><br>" +
-						"<div class='label'>Page.line</div><div class='field'><input id='context_page' name='context_page' type='text' size='10'/></div><br>" +
-						"<div class='label'>Note</div><div class='field'><textarea rows='3' cols='40' name='context_notes' id='context_notes'>" + def + "</textarea></div><br>" +
-						"<div class='label'><input id='submit_new' name='submit_new' type='submit' value='done'/></div>" +
-					"</form>" + 
-				"</div>";
-			$.facebox(htm) ;
-			$("#context_nickname").focus() ;
-				
-			/* autocomplete later
-			
-			$("#context_nickname").focus().autocomplete("./hyperactive.php?flag=ac_nickname", {
-				matchContains: true,
-				width: 200,
-				scroll: false
-			}).result(function(event,data,formatted){alert(data.id)});
-			*/
-		},
-		
-		info_get: function( el ) {
-			var id = $(el).closest(".votes").prev(".definition").attr("id") ;
-			$.post( "./hyperactive.php" , {
-				flag: "vote_info" ,
-				definition_id: id 
-				},
-				function( data ) {
-					$.facebox( data ) ;
-				}
-			);
-		},
-		
-		submit: function( id , dir ) {
-		
-			$.post( "./hyperactive.php" , {
-				flag:"vote",
-				id: id,
-				dir: dir,
-				cn: $('#context_nickname').val(),
-				ct: $('#context_title').val(),
-				ca: $('#context_author').val(),
-				cs: $('#context_sect').val(),
-				cg: $('#context_genre').val(),
-				cd: $('#context_date').val(),
-				cp: $('#context_page').val(),
-				cnt: $('#context_notes').val()
-				} , 
-				function( data ) {
-									
-					$(document).trigger('close.facebox') ;
-					
-					var targel = $("#" + id ).next() ;
-					this.view.show( targel ) ;
-					
-					// dynamically increment displayed vote count
-					
-					var targel = targel.children(".vote_count") ;
-					var old_votes = targel.html() ;
-					var new_votes = Number(old_votes) + Number(dir) ;
-					
-					// move incremented row to new place relevant to other votes
-					// TODO: change this so that it looks up if incrementing and down if decrementing
-					// and fix the check for self
-					
-					var tr = targel.closest("tr") ;
-					var trfirst = tr.prevAll(".term_row:first") ;
-					if ( tr.nextAll('.term_row:first').length > 0 ) {
-						var trend = tr.nextAll('.term_row:first') ;
-					} else {
-						var trend = tr.nextAll('tr:last') ;
-					}
-					trend = trend.html() ;
-					
-					var i = 0 ;
-					do {
-						trcheck = trfirst.nextAll("tr").eq(i) ;
-						trcount = trcheck.find(".vote_count").html() ;
-						if ( Number(trcount) <= new_votes ) {
-							i = -1 ;
-						} else {
-							i++ ;
-						}
-					} while ( trcheck.html() != trend && i > -1 ) ;
-					
-					if ( trcheck.html() != tr.html() ) {
-						
-						tr.fadeOut("slow", function() {
-							$(this).children(".def_spacer").children(".delete").remove() ;
-							$(this).find(".votes").hide() ;
-							$(this).insertBefore( trcheck ).find(".vote_count").html(new_votes).end().fadeIn() ;
-						}) ;
-						
-					} else {
-						
-						tr.find(".vote_count").html(new_votes) ;
-						
-					}
-										
-					// TODO: show new number for a moment in targel
-				}
-			);
-		},
-		
-		view: {
-		
-			action: function( el ) {
-				dic.vote_count = el.children(".vote_count") ;
-				dic.vote_count.replaceWith("<span class='vote_buttons'><a class='vote' href='#' onclick='dic.vote.go(this,\"1\");return false'>Up</a> | <a class='vote' href='#' onclick='dic.vote.go(this,\"-1\");return false'>Down</a> | <a class='vote' href='#' onclick='dic.vote.info_get(this);return false'>Info...</a></span>" ) ;
-			},
-			
-			show: function( el ) {
-				el.children(".vote_buttons").replaceWith(dic.vote_count) ;
-			}
-		
 		}
 	},
 
