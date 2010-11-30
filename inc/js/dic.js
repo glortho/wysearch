@@ -329,10 +329,6 @@ var dic = {
 		out += "<div class='label' id='spot_label'><img class='icon' src='./images/spot.gray.jpeg' width='30' height='30' /> <span class='label_header'>Spotlight ( <img class='indicator' src='./images/indicator.gif' /> )</span></div>" ;
 		return out ;
 	},
-	
-	get_defaults: function() {
-		// set automatically in the html with the checked arg
-	},
 		
 	get_user: function() {
 		if ( typeof(dic.user) == "undefined" || dic.user == "" ) {
@@ -517,6 +513,32 @@ var dic = {
 	
 	prefs: {
 		
+		apply: function() {
+			if ( this.selected && this.selected.length > 0 ) { 	//set in dic.init.get_settings
+				var dicarray = this.selected.split("&") ;		//format is standard url args, so get array of args
+				for ( i in dicarray ) {
+					var item = dicarray[i] ;
+					if ( item.length > 0 ) {
+						var item = dicarray[i].split("=");	//split into {key,val}
+						switch( item[0] ) {
+							case "fuzzyl" :
+								this.fuzzy.level_set( item[1] ) ;
+								break;
+							case "" : 	//in case one is empty, do nothing
+								break;
+							default:
+								var checked = ( item[1] === "true" ) ; // only slider require different treatment, rest are dom els
+								$("#" + item[0]).attr("checked" , checked ) ;
+								break;
+						}
+					}
+				}
+				if ( $("#fuzzy").attr("checked") == true ) { $("#slider_box").show()}
+			} else {
+				//this.selected = dic.get_defaults() ;
+			}
+		},
+		
 		build_text: function() {
 			var opts = this.get() ;
 			var scope = new Array();
@@ -674,6 +696,30 @@ var dic = {
 			return this.selected;
 		},
 		
+		storage: {
+			
+			retrieve: function() {
+				return $.cookie("options");
+			},
+	
+			save: function() {
+				var that = dic.prefs;
+				var options = that.get() ;
+				var store = "" ;
+				for ( i in options ) {
+					store += "&" + i + "=" + options[i] ;
+				}
+				$.cookie( "options" , store , { expires: 360 } ) ;
+				that.selected = options ;
+				that.toggle(0) ;
+				$.facebox("Settings saved!") ;
+				window.setTimeout( function() {$(document).trigger('close.facebox')} , 1300);
+				$("#term").focus() ;
+				return false; 
+			}
+		
+		},
+		
 		toggle: function( flag ) {
 			if ( typeof(flag) == "undefined") {
 				flag = !$(".options").is(":visible") ;
@@ -823,55 +869,6 @@ var dic = {
 			}
 
 		});	
-	},
-	
-	settings: {
-		
-		apply: function() {
-			if ( dic.prefs.selected && dic.prefs.selected.length > 0 ) { 	//set in dic.init.get_settings
-				var dicarray = dic.prefs.selected.split("&") ;		//format is standard url args, so get array of args
-				for ( i in dicarray ) {
-					var item = dicarray[i] ;
-					if ( item.length > 0 ) {
-						var item = dicarray[i].split("=");	//split into {key,val}
-						switch( item[0] ) {
-							case "fuzzyl" :
-								dic.prefs.fuzzy.level_set( item[1] ) ;
-								break;
-							case "" : 	//in case one is empty, do nothing
-								break;
-							default:
-								var checked = ( item[1] === "true" ) ; // only slider require different treatment, rest are dom els
-								$("#" + item[0]).attr("checked" , checked ) ;
-								break;
-						}
-					}
-				}
-				if ( $("#fuzzy").attr("checked") == true ) { $("#slider_box").show()}
-			} else {
-				dic.prefs.selected = dic.get_defaults() ;
-			}
-		},
-		
-		get: function() {
-			return $.cookie("options");
-		},
-
-		save: function() {
-			var options = dic.prefs.get() ;
-			var store = "" ;
-			for ( i in options ) {
-				store += "&" + i + "=" + options[i] ;
-			}
-			$.cookie( "options" , store , { expires: 360 } ) ;
-			dic.prefs = options ;
-			dic.prefs.toggle(0) ;
-			$.facebox("Settings saved!") ;
-			window.setTimeout( function() {$(document).trigger('close.facebox')} , 1300);
-			$("#term").focus() ;
-			return false; 
-		}
-		
 	},
 	
 	submit_def: function( el ) {
@@ -1295,7 +1292,7 @@ var dic = {
 							case 83: 	// s
 							
 								if ( dic.keydown.control ){
-									dic.settings.save();
+									dic.prefs.storage.save();
 								}
 								break;
 
@@ -1404,9 +1401,9 @@ var dic = {
 				
 				dic.user = dic.get_user() ;
 				
-				dic.prefs.selected = dic.settings.get() ;
+				dic.prefs.selected = dic.prefs.storage.retrieve() ;
 
-				dic.settings.apply( dic.prefs.selected ) ;
+				dic.prefs.apply( dic.prefs.selected ) ;
 
 				dic.prefs.build_text() ;
 
