@@ -54,7 +54,7 @@
 					</div>
 					<div class="options_dicpic"></div>
 					<div class="tools_right">
-						<a href="javascript:dic.settings.save();return false;" title="save settings"><img align="left" src="./images/disk16.png" alt="save settings" title="save settings" width="14" height="14"/></a>
+						<a href="javascript:dic.prefs.storage.save();return false;" title="save settings"><img align="left" src="./images/disk16.png" alt="save settings" title="save settings" width="14" height="14"/></a>
 					</div>
 				</div>
 				<div id="tip" class="options_tip">

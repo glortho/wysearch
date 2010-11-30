@@ -306,7 +306,7 @@ var dic = {
 
 		//$('#term').focus() ; 
 		//dic.selectedInput = $('#term') ;
-		dic.prefs.build_text() ;
+		dic.prefs.view.humanize() ;
 	},
 	
 	delete_def: function( el ) {
@@ -391,39 +391,6 @@ var dic = {
 			}
 		},
 		
-		build_text: function() {
-			var opts = this.get() ;
-			var scope = new Array();
-			var precision = new Array();
-			for ( o in opts ) {
-				if ( opts[o] !== false) {
-					if ( o == "exact" ) {
-						precision.push("exactly like this") ;
-					} else if ( o == "starts" ) {
-						precision.push("begins with this") ;
-					} else if ( o == "interm" ) {
-						scope.push("terms") ;
-					} else if ( o == "indef" ) {
-						scope.push("definitions") ;
-					} else if ( o == "fuzzy" ) {
-						var fl = this.fuzzy.level_get() ;
-						precision.push("fuzzified: " + fl ) ;
-
-					}
-				}
-			}
-			var str = "" ;
-			if ( precision.length > 0 ) {
-				str += "<strong>{</strong> <span class='exp'>" + precision.join(", ") + "</span> <strong>}</strong>&nbsp; " ;
-			} else {
-				str += "<strong>{</strong> <span class='exp'>anywhere</span> <strong>}</strong>&nbsp; " ;
-			}
-			str += "<span class='exp'>in</span> &nbsp;<strong>{</strong> <span class='exp'>" + scope.join(", ") + "</span> <strong>}</strong>&nbsp; " ;
-			str += "<span class='exp'>from</span> &nbsp;<strong>{</strong> <span class='exp'>" + opts.abbreviations + "</span> <strong>}</strong>" ;
-
-			$('.options_text').html(str) ;
-		},
-		
 		fuzzy: {
 			
 			level_get: function() {
@@ -446,7 +413,7 @@ var dic = {
 					var l = val ;
 				} 	
 				this.level = l ;
-				dic.prefs.build_text() ;
+				dic.prefs.view.humanize() ;
 			},
 			
 			slider: {
@@ -563,7 +530,7 @@ var dic = {
 				}
 				$.cookie( "options" , store , { expires: 360 } ) ;
 				that.selected = options ;
-				that.toggle(0) ;
+				that.view.toggle(0) ;
 				$.facebox("Settings saved!") ;
 				window.setTimeout( function() {$(document).trigger('close.facebox')} , 1300);
 				$("#term").focus() ;
@@ -572,23 +539,66 @@ var dic = {
 		
 		},
 		
-		toggle: function( flag ) {
-			if ( typeof(flag) == "undefined") {
-				flag = !$(".options").is(":visible") ;
-			}
-
-			if ( !flag ) { // get rid of checkboxes to see text only
-				if ( $("#tip").is(":visible") ) {
-					$("#tip").slideUp("fast", function() {
-						$('.options').slideUp("fast") ;
-					});
-				} else {
-					$('.options').slideUp("fast") ;
+		view: {
+		
+			humanize: function() {
+				var that = dic.prefs;
+				var opts = that.get() ;
+				var scope = new Array();
+				var precision = new Array();
+				for ( o in opts ) {
+					if ( opts[o] !== false) {
+						if ( o == "exact" ) {
+							precision.push("exactly like this") ;
+						} else if ( o == "starts" ) {
+							precision.push("begins with this") ;
+						} else if ( o == "interm" ) {
+							scope.push("terms") ;
+						} else if ( o == "indef" ) {
+							scope.push("definitions") ;
+						} else if ( o == "fuzzy" ) {
+							var fl = that.fuzzy.level_get() ;
+							precision.push("fuzzified: " + fl ) ;
+	
+						}
+					}
 				}
-			} else {
-				//$('.options_text').fadeOut("fast" , function() { 
-					$('.options').slideDown("fast") ;
-				//});
+				var str = "" ;
+				if ( precision.length > 0 ) {
+					str += "<strong>{</strong> <span class='exp'>" + precision.join(", ") + "</span> <strong>}</strong>&nbsp; " ;
+				} else {
+					str += "<strong>{</strong> <span class='exp'>anywhere</span> <strong>}</strong>&nbsp; " ;
+				}
+				str += "<span class='exp'>in</span> &nbsp;<strong>{</strong> <span class='exp'>" + scope.join(", ") + "</span> <strong>}</strong>&nbsp; " ;
+				str += "<span class='exp'>from</span> &nbsp;<strong>{</strong> <span class='exp'>" + opts.abbreviations + "</span> <strong>}</strong>" ;
+	
+				$('.options_text').html(str) ;
+			},
+
+			toggle: function( flag ) {
+				if ( typeof(flag) == "undefined") {
+					flag = !$(".options").is(":visible") ;
+				}
+	
+				if ( !flag ) { // get rid of checkboxes to see text only
+					if ( $("#tip").is(":visible") ) {
+						$("#tip").slideUp("fast", function() {
+							$('.options').slideUp("fast") ;
+						});
+					} else {
+						$('.options').slideUp("fast") ;
+					}
+				} else {
+					//$('.options_text').fadeOut("fast" , function() { 
+						$('.options').slideDown("fast") ;
+					//});
+				}
+			},
+			
+			toggle_dictionaries: function() {
+				this.dic_toggle = !this.dic_toggle ;
+				$("input[type=checkbox][id^=dic_]").attr("checked", !this.dic_toggle ) ;
+				dic.prefs.view.humanize();
 			}
 		}
 		
@@ -636,10 +646,6 @@ var dic = {
 						$('#dic_label img.indicator').replaceWith( dic.dic_count ) ;
 		
 						dic.binding.init() ;
-		
-						//if ( dic.dic_count > 0 ) {
-						//	var wt = window.setTimeout( dic.toggle_nav , 600 ) ;
-						//}
 					
 					}
 				});
@@ -729,11 +735,11 @@ var dic = {
 			
 			var term = $("#term").val() ;
 			
-			if ( dic.validate( term ) ) {
+			if ( this.validate( term ) ) {
 						
 				//dic.abort_ajax() ; // TODO: fix this abort! right now it reloads the page on .abort()
 	
-				dic.prefs.toggle(0) ; // shouldn't need to do this, but just in case options are still showing
+				dic.prefs.view.toggle(0) ; // shouldn't need to do this, but just in case options are still showing
 	
 				$("#output").empty() ;
 				$("#external").empty() ;
@@ -871,6 +877,18 @@ var dic = {
 			   }
 	
 			});
+		},
+		
+		validate: function( term ) {
+			var valid = {} ;
+			valid["term_exists"] = ( term != "" ) ;
+			valid["dics_checked"] = $("input[type=checkbox][id^=dic]:checked").length ;
+			if ( valid.term_exists && valid.dics_checked  ) {
+				return true ;
+			} else if ( !valid.dics_checked ) {
+				$.facebox("Select a dictionary, my friend.") ; //$.facebox( {ajax:"http://localhost/~jed/dic/hyperactive.php?flag=source_list"} ) ;
+			}
+			return false ;
 		}
 	},
 	
@@ -888,36 +906,6 @@ var dic = {
 			$("#" + id ).html( data ) ;
 			dic.binding.clicks.def( $("#" + id) ) ;
 		}) ;
-	},
-	
-	toggle_dictionaries: function() {
-		dic.dic_toggle = !dic.dic_toggle ;
-		$("input[type=checkbox][id^=dic_]").attr("checked", !dic.dic_toggle ) ;
-		dic.prefs.build_text();
-	},
-	
-	toggle_nav: function() {
-		if ( $("div.body").is(":visible") ) {
-			$("div.body").slideUp( function() {
-				$(".tab").slideDown( "fast" ) ;
-			}) ;
-		} else {
-			$("div.body").slideDown("fast" , function() {
-				$(".tab").hide() ;
- 			}) ;
-		}
-	},
-	
-	validate: function( term ) {
-		var valid = {} ;
-		valid["term_exists"] = ( term != "" ) ;
-		valid["dics_checked"] = $("input[type=checkbox][id^=dic]:checked").length ;
-		if ( valid.term_exists && valid.dics_checked  ) {
-			return true ;
-		} else if ( !valid.dics_checked ) {
-			$.facebox("Select a dictionary, my friend.") ; //$.facebox( {ajax:"http://localhost/~jed/dic/hyperactive.php?flag=source_list"} ) ;
-		}
-		return false ;
 	},
 
 	vote: function( el, dir ) {
@@ -1061,7 +1049,7 @@ var dic = {
 				doc: function() {
 					$(document).bind("click", function(event) {
 						if( !$(event.target).closest(".options_container").length ) {
-							dic.prefs.toggle(0);
+							dic.prefs.view.toggle(0);
 						} ;
 					});
 				},
@@ -1121,9 +1109,9 @@ var dic = {
 				
 				options_hover: function() {
 					$('.options_container').hoverIntent ({
-						over: function() { dic.prefs.toggle(1) },
+						over: function() { dic.prefs.view.toggle(1) },
 						interval: 100,
-						out: function(event) { dic.prefs.toggle(0) },
+						out: function(event) { dic.prefs.view.toggle(0) },
 						timeout: 500
 					});
 				},
@@ -1205,7 +1193,7 @@ var dic = {
 							case 48: 	// 0
 							
 								if ( dic.keydown.control ) {
-									dic.toggle_dictionaries() ;
+									dic.view.toggle_dictionaries() ;
 								}
 								break ;
 								
@@ -1286,7 +1274,7 @@ var dic = {
 							case 79: 	// o
 
 								if ( dic.keydown.control && dic.keydown.o ) {
-									dic.prefs.toggle() ;
+									dic.prefs.view.toggle() ;
 								} else if ( dic.keydown.control ) {
 									dic.keydown["o"] = true ;
 								}
@@ -1408,7 +1396,7 @@ var dic = {
 
 				dic.prefs.apply( dic.prefs.selected ) ;
 
-				dic.prefs.build_text() ;
+				dic.prefs.view.humanize() ;
 
 				binding.init() ;
 
