@@ -60,7 +60,7 @@ var dic = {
 					if ( confirm( "Are you sure you want to delete this term and all definitions?" ) ) {
 						$.post( "./hyperactive.php" , { flag: "delete_term" , id: term } , function( data ) {
 							el.closest("tr").fadeOut("slow", function() {
-								dic.lookup() ;
+								dic.search.go() ;
 							}) ;
 						}) ;
 					}
@@ -337,100 +337,6 @@ var dic = {
 		return dic.user ;
 	},
 	
-	google_search: function( site , term , start ) {
-		
-		var header = "" ;
-		
-		switch( site ) {
-			
-			case "tbrc.org": 
-				header = "TBRC" ; break ;
-			case "books.google.com": 
-				header = "Google Books" ; break ;
-			case "jstor.org": 
-				header = "JSTOR" ; break ;
-			case "nciku.com": 
-				header = "NCIKU" ; break ;
-			case "zdic.net": 
-				header = "ZDIC" ; break ;
-			case "otdo.aa.tufs.ac.jp":
-				header = "Dunhuang" ; break ;					
-			default: 
-				header = "Google" ; break ;
-			
-		}
-		
-		var header_display = $("#" + header).children(".results_group").css("display") ;		
-		
-		if ( dic.global_term != term ) {
-			$("#external").empty() ;
-			dic.global_term = term ;
-		}
-				
-		var q = ( site != "" ) ? "site:" + site + " " : "" ;
-		q += "\"" + term + "\"" ;
-		
-		var url = "http://ajax.googleapis.com/ajax/services/search/web?q=" + q + "&rsz=large&v=1.0&callback=?&start=" + start + "&key=ABQIAAAAPx_9rYqOcMbR1P86dhjbLBQH-wIUnrTxOqn0uq2q7qb9I-e9QBQwwhLwxsysZibUOeIjwoh-INJKkg" ;
-		
-		$.getJSON( url , function (data) {
-	       
-	 		if (data.responseData.results && data.responseData.results.length > 0) {
-	        	
-				var results = data.responseData.results;
-				var count = data.responseData.cursor.estimatedResultCount ;
-				
-				htm = "<div id='" + header + "' class='results_header'><span class='results_header_text'>" + header + "</span><span style='float:right'><span class='prev'> &lt; </span> " + count + " <span class='next' href=''> &gt; </span></span><div class='results_group'" ;
-				
-				htm += " style='display:" + header_display + "'>" ; 
-
-				for (var i=0; i < results.length; i++) {	
-						
-					var content = results[i].content ;
-											
-					htm += "<div class='results_title'><a target='_blank' href='" + results[i].unescapedUrl + "'>" + results[i].titleNoFormatting + "</a></div>" ;
-					htm += "<div class='results'>" + content + "</div>" ;
-					
-					if ( site == "") {
-						htm += "<div class='results_url'>" + results[i].visibleUrl + "</div>" 
-					}
-				} 
-				
-				htm += "</div></div>" ;
-				
-				if ( $( "#" + header ).length > 0 ) {
-					
-					var el = $( "#" + header ) ;
-					el.replaceWith( htm ) ;
-					
-				} else {
-					
-					var el = $("#external") ;
-					el.append( htm ) ;
-				}
-				
-				$("#" + header ).children(".results_header_text").click( function() {
-					
-					$(this).nextAll("div.results_group").toggle()	;
-					
-				}).end().find('.prev').click( function() {
-					
-					var prev = ( start - 8 < 0 ) ? 0 : start - 8 ;
-					dic.google_search( site , term , prev ) ;
-					return false ;
-					
-				}).end().find('.next').click( function() {
-					
-					var next = start + 8 ;
-					dic.google_search( site , term , next ) ;
-					return false ;
-					
-				}) ;
-
-	       }
-
-		});
-	},
-	
 	initializer: function( obj ) {
 		for ( o in obj ) {
 			if ( o != "init" ) {
@@ -441,60 +347,6 @@ var dic = {
 	
 	ischinese: function( term ) {
 		return ( term.match(/[a-z]/gi) == null ? true : false ) ;
-	},
-
-	lookup: function() {
-
-		var term = $("#term").val() ;
-		
-		if ( dic.validate( term ) ) {
-					
-			//dic.abort_ajax() ; // TODO: fix this abort! right now it reloads the page on .abort()
-
-			dic.prefs.toggle(0) ; // shouldn't need to do this, but just in case options are still showing
-
-			$("#output").empty() ;
-			$("#external").empty() ;
-
-			var options = dic.prefs.get( "string" ) ; // string param tells options to also include a url string of args
-
-			if ( options.interm || options.indef ) {
-
-				$('title').html("ReSearch: " + term ) ;
-				var win = window.location ;
-				window.location = "http://" + win.hostname + win.pathname + "#q=" + term ;
-
-				var head = dic.get_categories_html() ;
-				$("#output").append( head ) ;
-
-				dic.search_dictionary( term , options.string ) ;
-				
-				if ( dic.user == 1 ) {
-					dic.search_filemaker( term, options ) ;
-				}
-
-				dic.search_spotlight( term , options ) ;
-				
-				//search internet sources (may need to put this back in search_dictionary before dic.binding.init())
-				
-				if ( dic.ischinese( term ) ) {
-
-					dic.google_search( "zdic.net", term , 0 ) ;
-					dic.google_search( "nciku.com", term , 0 ) ;
-
-				} else {
-
-					dic.google_search( "tbrc.org", term , 0 ) ;
-					dic.google_search( "jstor.org", term , 0 ) ;
-					dic.google_search( "otdo.aa.tufs.ac.jp", term , 0 ) ;
-
-				}
-
-				dic.google_search( "" , term , 0 ) ;
-
-			}
-			return false ;
-		}
 	},
 	
 	make_editable: function( el ) {
@@ -754,128 +606,279 @@ var dic = {
 				$(document).trigger('close.facebox') ;
 			}
 			$('#term').val( term ) ;
-			dic.lookup() ;
+			dic.search.go() ;
 		}) ;
 		return false ;
 	},
+	
+	search: {
 		
-	search_dictionary: function( term , options ) {
-		
-		//alert( "q=" + term + options ) ;
-		
-		dic.req["dic"] = $.ajax({
-		    type: "POST",
-		    url: "./hyperactive.php",
-		    data: "flag=lookup&q=" + term + options ,
-		    success: function(data){
-
-			//$.post("./hyperactive.php" , { flag: "lookup" , q: term , s1: options.interm , s2: options.indef , ex: options.exact , st: options.starts, fuzzy: options.fuzzy, fuzzyl: options.fuzzyl, abbreviations: options.abbreviations } , function( data ) {
-
-				dic.req.dic = 0 ;
-				
-				$("#dic_label").append( data ) ;
-
-				dic.dic_count = $('#dic_count').val() ;
-
-				$('#dic_label img.indicator').replaceWith( dic.dic_count ) ;
-
-				dic.binding.init() ;
-
-				//if ( dic.dic_count > 0 ) {
-				//	var wt = window.setTimeout( dic.toggle_nav , 600 ) ;
-				//}
+		go: function() {
 			
-			}
-		});
-	},
-	
-	search_filemaker: function( term , options ) {
-
-		dic.req["fmp"] = $.ajax({
-		    type: "POST",
-		    url: "./hyperactive.php",
-		    data: "flag=fmp&q=" + term ,
-		    success: function(data){
+			function search_dictionary( term , options ) {
 		
-			//$.post( "./hyperactive.php" , { flag: "fmp" , q: term } , function( data ) {
-
-				dic.req.fmp = 0 ;
-				dic.fmp_count = 0 ;
-
-				$("#fmp_label").append( data ).find("input[id^=fmp_count_]").each( function() {
-					dic.fmp_count += parseInt($(this).val()) ;
-				}) ;
-
-				$('#fmp_label img.indicator').replaceWith( dic.fmp_count.toString() ) ;
-
-				if ( typeof(window['dic_count']) == "undefined" || dic.dic_count == "0" ) {
-					$('#fmp_label .results_table').show() ;
-				}
-
-				$('#fmp_label .spotlight_kind').click( function() {
-					var par = $(this).parent() ;
-					if ( par.nextAll(".spotlight_header").length > 0 ) {
-						var el = par.nextUntil(".spotlight_header:first") ;
-					} else {
-						var el = par.nextAll() ;
+				//alert( "q=" + term + options ) ;
+				
+				dic.req["dic"] = $.ajax({
+					type: "POST",
+					url: "./hyperactive.php",
+					data: "flag=lookup&q=" + term + options ,
+					success: function(data){
+		
+					//$.post("./hyperactive.php" , { flag: "lookup" , q: term , s1: options.interm , s2: options.indef , ex: options.exact , st: options.starts, fuzzy: options.fuzzy, fuzzyl: options.fuzzyl, abbreviations: options.abbreviations } , function( data ) {
+		
+						dic.req.dic = 0 ;
+						
+						$("#dic_label").append( data ) ;
+		
+						dic.dic_count = $('#dic_count').val() ;
+		
+						$('#dic_label img.indicator').replaceWith( dic.dic_count ) ;
+		
+						dic.binding.init() ;
+		
+						//if ( dic.dic_count > 0 ) {
+						//	var wt = window.setTimeout( dic.toggle_nav , 600 ) ;
+						//}
+					
 					}
-					el.toggle() ;
 				});
 			}
-		});
-	},
-	
-	search_spotlight: function( term , options ) {
+			
+			function search_filemaker( term , options ) {
 		
-		dic.req["spot"] = $.ajax({
-		    type: "POST",
-		    url: "./hyperactive.php",
-		    data: "flag=spotlight&q=" + term ,
-		    success: function(data){
-		
-				//$.post( "./hyperactive.php" , { flag: "spotlight" , q: term } , function( data ) {
-
-				dic.req.spot = 0 ;
+				dic.req["fmp"] = $.ajax({
+					type: "POST",
+					url: "./hyperactive.php",
+					data: "flag=fmp&q=" + term ,
+					success: function(data){
 				
-				$("#spot_label").append( data ) ;
-
-				dic.spot_count = $('#spot_count').val() ;										
-
-				$("#spot_label")
-					.find(".indicator")
-						.replaceWith( dic.spot_count )
-					.end()
-					.find(".spot_ref").
-						click( function() {
-							dic.binding.clicks.peek_inside($(this)) ;
-							return false ;
-
+					//$.post( "./hyperactive.php" , { flag: "fmp" , q: term } , function( data ) {
+		
+						dic.req.fmp = 0 ;
+						dic.fmp_count = 0 ;
+		
+						$("#fmp_label").append( data ).find("input[id^=fmp_count_]").each( function() {
+							dic.fmp_count += parseInt($(this).val()) ;
+						}) ;
+		
+						$('#fmp_label img.indicator').replaceWith( dic.fmp_count.toString() ) ;
+		
+						if ( typeof(window['dic_count']) == "undefined" || dic.dic_count == "0" ) {
+							$('#fmp_label .results_table').show() ;
+						}
+		
+						$('#fmp_label .spotlight_kind').click( function() {
+							var par = $(this).parent() ;
+							if ( par.nextAll(".spotlight_header").length > 0 ) {
+								var el = par.nextUntil(".spotlight_header:first") ;
+							} else {
+								var el = par.nextAll() ;
+							}
+							el.toggle() ;
 						});
-
-				if ( typeof(window['dic_count']) == "undefined" || dic.dic_count == "0" ) {
-					$('#spot_label .results_table').show() ;
-				}
-
-				$('#spot_label .spotlight_kind').click( function() {
-					var par = $(this).parent() ;
-					if ( par.nextAll(".spotlight_header").length > 0 ) {
-						var el = par.nextUntil(".spotlight_header:first") ;
-					} else {
-						var el = par.nextAll() ;
 					}
-					el.toggle() ;
 				});
+			}
+			
+			function search_spotlight( term , options ) {
+				
+				dic.req["spot"] = $.ajax({
+					type: "POST",
+					url: "./hyperactive.php",
+					data: "flag=spotlight&q=" + term ,
+					success: function(data){
+				
+						//$.post( "./hyperactive.php" , { flag: "spotlight" , q: term } , function( data ) {
+		
+						dic.req.spot = 0 ;
+						
+						$("#spot_label").append( data ) ;
+		
+						dic.spot_count = $('#spot_count').val() ;										
+		
+						$("#spot_label")
+							.find(".indicator")
+								.replaceWith( dic.spot_count )
+							.end()
+							.find(".spot_ref").
+								click( function() {
+									dic.binding.clicks.peek_inside($(this)) ;
+									return false ;
+		
+								});
+		
+						if ( typeof(window['dic_count']) == "undefined" || dic.dic_count == "0" ) {
+							$('#spot_label .results_table').show() ;
+						}
+		
+						$('#spot_label .spotlight_kind').click( function() {
+							var par = $(this).parent() ;
+							if ( par.nextAll(".spotlight_header").length > 0 ) {
+								var el = par.nextUntil(".spotlight_header:first") ;
+							} else {
+								var el = par.nextAll() ;
+							}
+							el.toggle() ;
+						});
+						
+					}
+		
+				});	
+			}
+			
+			var term = $("#term").val() ;
+			
+			if ( dic.validate( term ) ) {
+						
+				//dic.abort_ajax() ; // TODO: fix this abort! right now it reloads the page on .abort()
+	
+				dic.prefs.toggle(0) ; // shouldn't need to do this, but just in case options are still showing
+	
+				$("#output").empty() ;
+				$("#external").empty() ;
+	
+				var options = dic.prefs.get( "string" ) ; // string param tells options to also include a url string of args
+	
+				if ( options.interm || options.indef ) {
+	
+					$('title').html("ReSearch: " + term ) ;
+					var win = window.location ;
+					window.location = "http://" + win.hostname + win.pathname + "#q=" + term ;
+	
+					var head = dic.get_categories_html() ;
+					$("#output").append( head ) ;
+	
+					search_dictionary( term , options.string ) ;
+					
+					if ( dic.user == 1 ) {
+						search_filemaker( term, options ) ;
+					}
+	
+					search_spotlight( term , options ) ;
+					
+					//search internet sources (may need to put this back in search_dictionary before dic.binding.init())
+					
+					if ( dic.ischinese( term ) ) {
+	
+						this.google( "zdic.net", term , 0 ) ;
+						this.google( "nciku.com", term , 0 ) ;
+	
+					} else {
+	
+						this.google( "tbrc.org", term , 0 ) ;
+						this.google( "jstor.org", term , 0 ) ;
+						this.google( "otdo.aa.tufs.ac.jp", term , 0 ) ;
+	
+					}
+	
+					this.google( "" , term , 0 ) ;
+	
+				}
+				return false ;
+			}
+		},
+		
+		google: function( site , term , start ) {
+		
+			var header = "" ;
+			
+			switch( site ) {
+				
+				case "tbrc.org": 
+					header = "TBRC" ; break ;
+				case "books.google.com": 
+					header = "Google Books" ; break ;
+				case "jstor.org": 
+					header = "JSTOR" ; break ;
+				case "nciku.com": 
+					header = "NCIKU" ; break ;
+				case "zdic.net": 
+					header = "ZDIC" ; break ;
+				case "otdo.aa.tufs.ac.jp":
+					header = "Dunhuang" ; break ;					
+				default: 
+					header = "Google" ; break ;
 				
 			}
-
-		});	
+			
+			var header_display = $("#" + header).children(".results_group").css("display") ;		
+			
+			if ( dic.global_term != term ) {
+				$("#external").empty() ;
+				dic.global_term = term ;
+			}
+					
+			var q = ( site != "" ) ? "site:" + site + " " : "" ;
+			q += "\"" + term + "\"" ;
+			
+			var url = "http://ajax.googleapis.com/ajax/services/search/web?q=" + q + "&rsz=large&v=1.0&callback=?&start=" + start + "&key=ABQIAAAAPx_9rYqOcMbR1P86dhjbLBQH-wIUnrTxOqn0uq2q7qb9I-e9QBQwwhLwxsysZibUOeIjwoh-INJKkg" ;
+			
+			$.getJSON( url , function (data) {
+			   
+				if (data.responseData.results && data.responseData.results.length > 0) {
+					
+					var results = data.responseData.results;
+					var count = data.responseData.cursor.estimatedResultCount ;
+					
+					htm = "<div id='" + header + "' class='results_header'><span class='results_header_text'>" + header + "</span><span style='float:right'><span class='prev'> &lt; </span> " + count + " <span class='next' href=''> &gt; </span></span><div class='results_group'" ;
+					
+					htm += " style='display:" + header_display + "'>" ; 
+	
+					for (var i=0; i < results.length; i++) {	
+							
+						var content = results[i].content ;
+												
+						htm += "<div class='results_title'><a target='_blank' href='" + results[i].unescapedUrl + "'>" + results[i].titleNoFormatting + "</a></div>" ;
+						htm += "<div class='results'>" + content + "</div>" ;
+						
+						if ( site == "") {
+							htm += "<div class='results_url'>" + results[i].visibleUrl + "</div>" 
+						}
+					} 
+					
+					htm += "</div></div>" ;
+					
+					if ( $( "#" + header ).length > 0 ) {
+						
+						var el = $( "#" + header ) ;
+						el.replaceWith( htm ) ;
+						
+					} else {
+						
+						var el = $("#external") ;
+						el.append( htm ) ;
+					}
+					
+					$("#" + header ).children(".results_header_text").click( function() {
+						
+						$(this).nextAll("div.results_group").toggle()	;
+						
+					}).end().find('.prev').click( function() {
+						
+						var prev = ( start - 8 < 0 ) ? 0 : start - 8 ;
+						dic.search.google( site , term , prev ) ;
+						return false ;
+						
+					}).end().find('.next').click( function() {
+						
+						var next = start + 8 ;
+						dic.search.google( site , term , next ) ;
+						return false ;
+						
+					}) ;
+	
+			   }
+	
+			});
+		}
 	},
 	
 	submit_def: function( el ) {
 		var flag = "new_sub" ;
 		var id = $(el).closest("tr").prevAll(".term_row:first").children("td").attr("id") ;
 		$.post( './hyperactive.php' , { flag: flag , term_id: id , def: $('#def_new').val() } , function( data ) {
-			dic.lookup() ;
+			dic.search.go() ;
 		})
 	},
 	
@@ -1392,7 +1395,7 @@ var dic = {
 				q = q[1].replace( /\+/g , " " ) ;
 				//$('#term').val(x) ;
 				$('#term').val(unescape(q)) ;
-				dic.lookup() ;
+				dic.search.go() ;
 			}	
 		}
 		
@@ -1452,7 +1455,7 @@ $(function() {
 		matchContains: true,
 		width: 200,
 		scroll: false
-	}).result(function(event,data,formatted){dic.lookup()});
+	}).result(function(event,data,formatted){dic.search.go()});
 	*/
 	
 	dic.init() ;

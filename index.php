@@ -31,7 +31,7 @@
 	<div class="tab"> </div>
 	<div class="body">
 		<div class="help">( ? )</div>
-		<form id="term_form" action="" method="" onsubmit="javascript:dic.lookup(); return false;" style="display:inline">
+		<form id="term_form" action="" method="" onsubmit="javascript:dic.search.go(); return false;" style="display:inline">
 			<input id="term" type="text" size="40"/>
 			<div class="options_container">
 				<div class="options_text" style="display:inline"></div>
