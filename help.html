@@ -1,0 +1,40 @@
+<div class="help-text">
+	<strong>re-search</strong> is a tool for searching tibetan terms. in addition to giving you the option of "fuzzy" search – swapping out commonly confused head letters, prefixes, etc. – it searches sites such as jstor and tbrc, and documents such as the peking tripitaka catalogue, kangyur, etc. it does not break phrases down into component terms like the translation tool does.
+	
+	<p><strong>search options</strong></p>
+	
+	<p>hover over the search description to the right of the search box to see options. note that all of these options apply only to dictionary searches, and not to web site or document searches.</p>
+	
+	<p><i>terms</i>: search dictionary terms</p>
+
+	<p><i>definitions</i>: search dictionary definitions</p>
+
+	<p><i>exact</i>: search the dictionary for terms or definitions that match your query exactly. note that it's often not useful to select this if you're searching definitions, as most of them won't match what you type word-for-word.</p>
+	
+	<p><i>begins with</i>: search the dictionary for terms or definitions that start with your query.</p>
+	
+	<p>note: if you uncheck both exact and begins with, it will search anywhere within terms or dictionaries. in other words, searching for "rdo rje" will match "rdo rje", "rig pa'i rdo rje", and "rdo rje phag mo".</p>
+
+	<p><i>fuzzy</i>: there are 4 levels of fuzzy search:
+		<ol>
+			<li>try different head letters and prefixes</li>
+			<li>try similar root letters and vowels</li>
+			<li>add or remove particles (locative, genitive, agentive, etc.)</li>
+			<li>i'll never tell!</li>
+		</ol>
+	note that you can have both an "exact" and a "fuzzy" search. "exact" refers to the position in the term or definition you're searching – do you want to search anywhere in the term, at the beginning, or exactly as is? – whereas "fuzzy" refers to the different ways tibetan syllables can be written.
+	</p>
+	
+	<p>you can also use <a target="_blank" href="http://dev.mysql.com/doc/refman/5.1/en/regexp.html">regex</a> in your searches. for example...
+	
+		<ul>
+			<li>if you want to find both "rgod" and "khyung", you could search for this: (rgod|khyung).</li>
+			<li>if you know your term starts with "ting" and ends with "'dzin" but can't remember the middle, you can search for this: ting.*'dzin</li>
+		</ul>
+	</p>
+	
+	<p><strong>tips</strong></p>
+	
+	<p>re-search searches a huge amount of data, so some queries can take a long time. a fuzzy:4 search for "pa" anywhere in terms and definitions will take a very long time. it may never finish. the longer the term the faster the search. don't search definitions unless you can't find something in terms (or you want to look something up in english).</p>
+		
+</div>
