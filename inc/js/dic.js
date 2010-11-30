@@ -240,58 +240,6 @@ var dic = {
 		}
 		return false ;
 	},
-		
-	checkbox_clicked: function( el ) {
-			
-		if ( dic.keydown.o ) {
-			var checked = !el.attr("checked") ;
-			el.attr("checked" , checked ) ;
-		} else {
-			var checked = el.attr("checked") ;
-		}
-		
-		id = el.attr("id") ;
-		
-		switch( id ) {
-			case "starts" :
-				$('#exact').attr("checked" , false ) ;
-				break;
-			case "exact" :
-				$('#starts').attr("checked" , false ) ;
-				break;
-			case "fuzzy" :
-				if ( checked ) {
-					$("#slider_box").fadeIn("fast") ;
-					dic.prefs.fuzzy.level_set(1) ;
-				} else {
-					$("#slider_box").css("display","none") ;
-					dic.prefs.fuzzy.tip_retract() ;
-				}
-				break;
-			case "indef" :
-				if ( el.attr("checked") ) {
-					$("#exact").attr("checked" , false ) ;
-				} else {
-					var term = $("#interm") ;
-					if ( !term.attr("checked") ) {
-						term.attr("checked",true);
-					}
-				}
-				break;
-			case "interm" :
-				var def = $("#indef") ;
-				if ( !el.attr("checked") && !def.attr("checked") ) {
-					def.attr("checked",true);
-				}
-				break;
-			default:
-				break;
-		}
-
-		//$('#term').focus() ; 
-		//dic.selectedInput = $('#term') ;
-		dic.prefs.view.humanize() ;
-	},
 	
 	edit: {
 	
@@ -568,6 +516,60 @@ var dic = {
 		
 		view: {
 		
+			checkbox_clicked: function( el ) {
+			
+				var that = dic.prefs;
+				
+				if ( dic.keydown.o ) {
+					var checked = !el.attr("checked") ;
+					el.attr("checked" , checked ) ;
+				} else {
+					var checked = el.attr("checked") ;
+				}
+				
+				id = el.attr("id") ;
+				
+				switch( id ) {
+					case "starts" :
+						$('#exact').attr("checked" , false ) ;
+						break;
+					case "exact" :
+						$('#starts').attr("checked" , false ) ;
+						break;
+					case "fuzzy" :
+						if ( checked ) {
+							$("#slider_box").fadeIn("fast") ;
+							that.fuzzy.level_set(1) ;
+						} else {
+							$("#slider_box").css("display","none") ;
+							that.fuzzy.tip_retract() ;
+						}
+						break;
+					case "indef" :
+						if ( el.attr("checked") ) {
+							$("#exact").attr("checked" , false ) ;
+						} else {
+							var term = $("#interm") ;
+							if ( !term.attr("checked") ) {
+								term.attr("checked",true);
+							}
+						}
+						break;
+					case "interm" :
+						var def = $("#indef") ;
+						if ( !el.attr("checked") && !def.attr("checked") ) {
+							def.attr("checked",true);
+						}
+						break;
+					default:
+						break;
+				}
+		
+				//$('#term').focus() ; 
+				//dic.selectedInput = $('#term') ;
+				this.humanize() ;
+			},
+			
 			humanize: function() {
 				var that = dic.prefs;
 				var opts = that.get() ;
@@ -625,7 +627,7 @@ var dic = {
 			toggle_dictionaries: function() {
 				this.dic_toggle = !this.dic_toggle ;
 				$("input[type=checkbox][id^=dic_]").attr("checked", !this.dic_toggle ) ;
-				dic.prefs.view.humanize();
+				this.humanize();
 			}
 		}
 		
@@ -912,41 +914,44 @@ var dic = {
 		}
 	},
 
-	vote: function( el, dir ) {
-		var def = $(el).closest(".votes").prev(".definition")
-		id = def.attr("id") ;
-		def = def.html() ;
-		var htm = 
-			"<div class='details'>" +
-				"Include as much info as you can about the text or context that led you to vote this way.<br/>" +
-				"<form action='' method='post' onsubmit='javascript:dic.vote_post(" + id + "," + dir + "); return false;'>" +
-					"<div class='label'>Nickname</div><div class='field'><input id='context_nickname' name='context_nickname' type='text' size='50'value='nldz'/></div><br>" +
-					"<div class='label'>Title</div><div class='field'><input id='context_title' name='context_title' type='text' size='50'/></div><br>" +
-					"<div class='label'>Author</div><div class='field'><input id='context_author' name='context_author' type='text' size='50'/></div><br>" +
-					"<div class='label'>Sect</div><div class='field'><input id='context_sect' name='context_sect' type='text' size='50'/></div><br>" +
-					"<div class='label'>Text Genre</div><div class='field'><input id='context_genre' name='context_genre' type='text' size='50'/></div><br>" +
-					"<div class='label'>Date or Time Period</div><div class='field'><input id='context_date' name='context_date' type='text' size='20' value=''/></div><br>" +
-					"<div class='label'>Page.line</div><div class='field'><input id='context_page' name='context_page' type='text' size='10'/></div><br>" +
-					"<div class='label'>Note</div><div class='field'><textarea rows='3' cols='40' name='context_notes' id='context_notes'>" + def + "</textarea></div><br>" +
-					"<div class='label'><input id='submit_new' name='submit_new' type='submit' value='done'/></div>" +
-				"</form>" + 
-			"</div>";
-		$.facebox(htm) ;
-		$("#context_nickname").focus() ;
+	vote: {
+	
+		go: function( el, dir ) {
+			var def = $(el).closest(".votes").prev(".definition")
+			id = def.attr("id") ;
+			def = def.html() ;
+			var htm = 
+				"<div class='details'>" +
+					"Include as much info as you can about the text or context that led you to vote this way.<br/>" +
+					"<form action='' method='post' onsubmit='javascript:dic.vote_post(" + id + "," + dir + "); return false;'>" +
+						"<div class='label'>Nickname</div><div class='field'><input id='context_nickname' name='context_nickname' type='text' size='50'value='nldz'/></div><br>" +
+						"<div class='label'>Title</div><div class='field'><input id='context_title' name='context_title' type='text' size='50'/></div><br>" +
+						"<div class='label'>Author</div><div class='field'><input id='context_author' name='context_author' type='text' size='50'/></div><br>" +
+						"<div class='label'>Sect</div><div class='field'><input id='context_sect' name='context_sect' type='text' size='50'/></div><br>" +
+						"<div class='label'>Text Genre</div><div class='field'><input id='context_genre' name='context_genre' type='text' size='50'/></div><br>" +
+						"<div class='label'>Date or Time Period</div><div class='field'><input id='context_date' name='context_date' type='text' size='20' value=''/></div><br>" +
+						"<div class='label'>Page.line</div><div class='field'><input id='context_page' name='context_page' type='text' size='10'/></div><br>" +
+						"<div class='label'>Note</div><div class='field'><textarea rows='3' cols='40' name='context_notes' id='context_notes'>" + def + "</textarea></div><br>" +
+						"<div class='label'><input id='submit_new' name='submit_new' type='submit' value='done'/></div>" +
+					"</form>" + 
+				"</div>";
+			$.facebox(htm) ;
+			$("#context_nickname").focus() ;
+				
+			/* autocomplete later
 			
-		/* autocomplete later
-		
-		$("#context_nickname").focus().autocomplete("./hyperactive.php?flag=ac_nickname", {
-			matchContains: true,
-			width: 200,
-			scroll: false
-		}).result(function(event,data,formatted){alert(data.id)});
-		*/
+			$("#context_nickname").focus().autocomplete("./hyperactive.php?flag=ac_nickname", {
+				matchContains: true,
+				width: 200,
+				scroll: false
+			}).result(function(event,data,formatted){alert(data.id)});
+			*/
+		}
 	},
 	
 	vote_action_show: function( el ) {
 		dic.vote_count = el.children(".vote_count") ;
-		dic.vote_count.replaceWith("<span class='vote_buttons'><a class='vote' href='#' onclick='dic.vote(this,\"1\");return false'>Up</a> | <a class='vote' href='#' onclick='dic.vote(this,\"-1\");return false'>Down</a> | <a class='vote' href='#' onclick='dic.vote_info(this);return false'>Info...</a></span>" ) ;
+		dic.vote_count.replaceWith("<span class='vote_buttons'><a class='vote' href='#' onclick='dic.vote.go(this,\"1\");return false'>Up</a> | <a class='vote' href='#' onclick='dic.vote.go(this,\"-1\");return false'>Down</a> | <a class='vote' href='#' onclick='dic.vote_info(this);return false'>Info...</a></span>" ) ;
 	},
 	
 	vote_info: function( el ) {
@@ -1045,7 +1050,7 @@ var dic = {
 				bind_checkbox: function() {
 
 					$('input[type=checkbox]').change( function() { 
-						dic.checkbox_clicked( $(this) ) ;
+						dic.prefs.view.checkbox_clicked( $(this) ) ;
 					});
 
 				},
@@ -1232,28 +1237,28 @@ var dic = {
 							case 66: 	// b
 							
 								if ( dic.keydown.o ) {
-									dic.checkbox_clicked( $('#starts') ) ;
+									dic.prefs.view.checkbox_clicked( $('#starts') ) ;
 								}
 								break;
 							
 							case 68: 	// d
 
 								if ( dic.keydown.o ) {
-									dic.checkbox_clicked( $('#indef') ) ;
+									dic.prefs.view.checkbox_clicked( $('#indef') ) ;
 								}
 								break;
 
 							case 69: 	// e
 
 								if ( dic.keydown.o ) {
-									dic.checkbox_clicked( $('#exact') ) ;
+									dic.prefs.view.checkbox_clicked( $('#exact') ) ;
 								}
 								break;
 
 							case 70: 	// f
 
 								if ( dic.keydown.o ) {
-									dic.checkbox_clicked( $('#fuzzy') ) ;
+									dic.prefs.view.checkbox_clicked( $('#fuzzy') ) ;
 								}
 								dic.keydown["f"] = true ;
 								break;
@@ -1293,7 +1298,7 @@ var dic = {
 
 							case 84: 	// t
 								if ( dic.keydown.o ) {
-									dic.checkbox_clicked( $('#interm') ) ;
+									dic.prefs.view.checkbox_clicked( $('#interm') ) ;
 								}
 								break;
 
