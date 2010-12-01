@@ -910,7 +910,7 @@ var dic = {
 				} else {
 				
 					var win = window.location ;
-					window.location = "http://" + win.hostname + win.pathname + "#q=" + term ;
+					window.location = "http://" + win.hostname + win.pathname + "#" + term ;
 				}		
 			}
 			
