@@ -1,10 +1,5 @@
-function supports_local_storage() {
-	try {
-		return 'localStorage' in window && window['localStorage'] !== null;
-	} catch(e) { return false; }
-}
-
-html5storage = supports_local_storage() ;
+html5storage = Modernizr.localstorage ;
+html5history = Modernizr.history ;
 
 var dic = {
 	
@@ -899,12 +894,32 @@ var dic = {
 				});	
 			}
 			
+			function store_history( term , caller ) {
+				
+				if ( html5history ) {
+				
+					if ( caller.toString().indexOf("( e )") > -1 ) {
+					
+						window.history.replaceState( term , term , "/dic/#" + term ) ;
+					
+					} else {
+					
+						window.history.pushState( term , term , "/dic/#" + term ) ;
+					}
+					
+				} else {
+				
+					var win = window.location ;
+					window.location = "http://" + win.hostname + win.pathname + "#q=" + term ;
+				}		
+			}
+			
 			var term = $("#term").val() ;
 			
 			if ( this.validate( term ) ) {
 						
 				//dic.abort_ajax() ; // TODO: fix this abort! right now it reloads the page on .abort()
-	
+				
 				dic.prefs.view.toggle(0) ; // shouldn't need to do this, but just in case options are still showing
 	
 				$("#output").empty() ;
@@ -915,9 +930,9 @@ var dic = {
 				if ( options.interm || options.indef ) {
 	
 					$('title').html("ReSearch: " + term ) ;
-					var win = window.location ;
-					window.location = "http://" + win.hostname + win.pathname + "#q=" + term ;
-	
+					
+					store_history( term , arguments.callee.caller ) ;
+					
 					var head = get_categories_html() ;
 					$("#output").append( head ) ;
 	
@@ -1390,11 +1405,42 @@ var dic = {
 			
 			},
 			
+			win: {
+			
+				pop: function() {
+				
+					if ( html5history ) {
+					
+						window.onpopstate = function( e ) {
+						
+							if ( e.state != null ) {
+
+								$('#term').val(unescape(e.state)) ;
+								dic.search.go() ;
+								
+							} else {
+							
+								window.location.reload();
+							}
+							
+						};
+					}
+				},
+				
+				init: function() {
+				
+					dic.initializer(this);
+				
+				}
+			
+			},
+			
 			init: function() {
 
 				this.hover.init() ;
 				this.keys.init() ;
 				this.clicks.init() ;
+				this.win.init() ;
 				
 			}
 			
@@ -1403,11 +1449,9 @@ var dic = {
 		function consume_external() {
 			
 			var q = ( location.search == '' ) ? location.hash : location.search ;
-			//var x = q ;
 			if ( q != "" ) {
-				q = q.split(/q=/) ;
+				q = q.split(/#/) ;
 				q = q[1].replace( /\+/g , " " ) ;
-				//$('#term').val(x) ;
 				$('#term').val(unescape(q)) ;
 				dic.search.go() ;
 			}	

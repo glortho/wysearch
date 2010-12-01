@@ -22,6 +22,7 @@
 	<script src="./inc/js/jquery-ui-1.8.1.custom.min.js"></script>
 	<script src="./inc/js/jquery.cookie.js"></script>
 	<script src="./inc/js/jquery.autocomplete.js"></script>
+	<script src="./inc/js/modernizr-1.6.min.js"></script>
 	<script src="./inc/js/dic.js"></script>
 </head>
 
