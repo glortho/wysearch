@@ -1,3 +1,10 @@
+function supports_local_storage() {
+	try {
+		return 'localStorage' in window && window['localStorage'] !== null;
+	} catch(e) { return false; }
+}
+
+html5storage = supports_local_storage() ;
 
 var dic = {
 	
@@ -617,9 +624,12 @@ var dic = {
 		},
 		
 		storage: {
+		
+			save_name: "options",
 			
 			retrieve: function() {
-				return $.cookie("options");
+			
+				return ( html5storage ? localStorage.getItem( this.save_name ) : $.cookie( this.save_name ) ) ;			
 			},
 	
 			save: function() {
@@ -629,7 +639,11 @@ var dic = {
 				for ( i in options ) {
 					store += "&" + i + "=" + options[i] ;
 				}
-				$.cookie( "options" , store , { expires: 360 } ) ;
+				if ( html5storage ) {
+					localStorage.setItem( this.save_name , store );
+				} else {
+					$.cookie( this.save_name , store , { expires: 360 } ) ;
+				}
 				that.selected = options ;
 				that.view.toggle(0) ;
 				$.facebox("Settings saved!") ;
@@ -1459,6 +1473,7 @@ $(function() {
 	*/
 	
 	dic.init() ;
+	
 					
 	
 });
