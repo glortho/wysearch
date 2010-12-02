@@ -108,23 +108,6 @@ var dic = {
 			
 		},
 		
-		custom: function () {
-
-			$(document).bind('search-complete search-complete-all search-start' , function( event, term ) {
-				var et = event.type;
-				if ( et == "search-start" ) {
-					dic.search_count++ ;
-				} else if ( et == "search-complete" ) {
-					if ( --dic.search_count == 0 ) {
-						$.event.trigger("search-complete-all" , term );
-					}
-				} else {
-					//console.log("done");
-				}
-				return false;
-			});
-		},
-		
 		hover: {
 			
 			category_hover: function() {
@@ -241,9 +224,7 @@ var dic = {
 		init: function() {
 			
 			this.hover.init() ;
-			this.clicks.init() ;
-			this.custom();
-			
+			this.clicks.init() ;			
 		}
 		
 	},
@@ -808,6 +789,8 @@ var dic = {
 				
 				var that = dic.search;
 				
+				dic.binding.init() ;
+				
 				search_dictionary( term , options.string ) ;
 					
 				if ( dic.user == 1 ) {
@@ -836,6 +819,8 @@ var dic = {
 			
 			function search_dictionary( term , options ) {
 				
+				$.event.trigger("search-start" , term ) ;
+				
 				dic.req["dic"] = $.ajax({
 					type: "POST",
 					url: "./hyperactive.php",
@@ -843,8 +828,6 @@ var dic = {
 					success: function(data){
 		
 					//$.post("./hyperactive.php" , { flag: "lookup" , q: term , s1: options.interm , s2: options.indef , ex: options.exact , st: options.starts, fuzzy: options.fuzzy, fuzzyl: options.fuzzyl, abbreviations: options.abbreviations } , function( data ) {
-		
-						$.event.trigger("search-start" , term ) ;
 						
 						dic.req.dic = 0 ;
 						
@@ -853,8 +836,6 @@ var dic = {
 						dic.dic_count = $('#dic_count').val() ;
 		
 						$('#dic_label img.indicator').replaceWith( dic.dic_count ) ;
-		
-						dic.binding.init() ;
 						
 						$.event.trigger("search-complete" , term ) ;
 					
@@ -864,6 +845,8 @@ var dic = {
 			
 			function search_filemaker( term , options ) {
 		
+				$.event.trigger("search-start", term);
+
 				dic.req["fmp"] = $.ajax({
 					type: "POST",
 					url: "./hyperactive.php",
@@ -871,9 +854,7 @@ var dic = {
 					success: function(data){
 				
 					//$.post( "./hyperactive.php" , { flag: "fmp" , q: term } , function( data ) {
-		
-						$.event.trigger("search-start", term);
-						
+
 						dic.req.fmp = 0 ;
 						dic.fmp_count = 0 ;
 		
@@ -904,6 +885,8 @@ var dic = {
 			
 			function search_spotlight( term , options ) {
 				
+				$.event.trigger("search-start", term);
+
 				dic.req["spot"] = $.ajax({
 					type: "POST",
 					url: "./hyperactive.php",
@@ -911,8 +894,6 @@ var dic = {
 					success: function(data){
 				
 						//$.post( "./hyperactive.php" , { flag: "spotlight" , q: term } , function( data ) {
-		
-						$.event.trigger("search-start", term);
 						
 						dic.req.spot = 0 ;
 						
@@ -1004,6 +985,8 @@ var dic = {
 		
 		google: function( site , term , start ) {
 			
+			$.event.trigger("search-start", term);
+					
 			var header = "" ;
 			
 			switch( site ) {
@@ -1038,8 +1021,6 @@ var dic = {
 			var url = "http://ajax.googleapis.com/ajax/services/search/web?q=" + q + "&rsz=large&v=1.0&callback=?&start=" + start + "&key=ABQIAAAAPx_9rYqOcMbR1P86dhjbLBQH-wIUnrTxOqn0uq2q7qb9I-e9QBQwwhLwxsysZibUOeIjwoh-INJKkg" ;
 			
 			$.getJSON( url , function (data) {
-			   
-				$.event.trigger("search-start", term);
 			
 				if (data.responseData.results && data.responseData.results.length > 0) {
 					
@@ -1171,6 +1152,23 @@ var dic = {
 				}
 
 
+			},
+			
+			custom: function () {
+
+				$(document).bind('search-complete search-complete-all search-start' , function( event, term ) {
+					var et = event.type;
+					if ( et == "search-start" ) {
+						dic.search_count++ ;
+					} else if ( et == "search-complete" ) {
+						if ( --dic.search_count == 0 ) {
+							$.event.trigger("search-complete-all" , term );
+						}
+					} else {
+						//console.log("done");
+					}
+					return false;
+				});
 			},
 			
 			hover: {
@@ -1481,6 +1479,7 @@ var dic = {
 				this.keys.init() ;
 				this.clicks.init() ;
 				this.win.init() ;
+				this.custom();
 				
 			}
 			
