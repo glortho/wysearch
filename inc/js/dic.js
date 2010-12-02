@@ -108,6 +108,23 @@ var dic = {
 			
 		},
 		
+		custom: function () {
+
+			$(document).bind('search-complete search-complete-all search-start' , function( event, term ) {
+				var et = event.type;
+				if ( et == "search-start" ) {
+					dic.search_count++ ;
+				} else if ( et == "search-complete" ) {
+					if ( --dic.search_count == 0 ) {
+						$.event.trigger("search-complete-all" , term );
+					}
+				} else {
+					//console.log("done");
+				}
+				return false;
+			});
+		},
+		
 		hover: {
 			
 			category_hover: function() {
@@ -225,6 +242,7 @@ var dic = {
 			
 			this.hover.init() ;
 			this.clicks.init() ;
+			this.custom();
 			
 		}
 		
@@ -786,9 +804,37 @@ var dic = {
 				return ( term.match(/[a-z]/gi) == null ? true : false ) ;
 			}
 			
+			function search_ ( term, options ) {
+				
+				var that = dic.search;
+				
+				search_dictionary( term , options.string ) ;
+					
+				if ( dic.user == 1 ) {
+					search_filemaker( term, options ) ;
+				}
+
+				search_spotlight( term , options ) ;
+				
+				//search internet sources (may need to put this back in search_dictionary before dic.binding.init())
+				
+				if ( ischinese( term ) ) {
+	
+					that.google( "zdic.net", term , 0 ) ;
+					that.google( "nciku.com", term , 0 ) ;
+	
+				} else {
+	
+					that.google( "tbrc.org", term , 0 ) ;
+					that.google( "jstor.org", term , 0 ) ;
+					that.google( "otdo.aa.tufs.ac.jp", term , 0 ) ;
+	
+				}
+	
+				that.google( "" , term , 0 ) ;
+			}
+			
 			function search_dictionary( term , options ) {
-		
-				//alert( "q=" + term + options ) ;
 				
 				dic.req["dic"] = $.ajax({
 					type: "POST",
@@ -798,6 +844,8 @@ var dic = {
 		
 					//$.post("./hyperactive.php" , { flag: "lookup" , q: term , s1: options.interm , s2: options.indef , ex: options.exact , st: options.starts, fuzzy: options.fuzzy, fuzzyl: options.fuzzyl, abbreviations: options.abbreviations } , function( data ) {
 		
+						$.event.trigger("search-start" , term ) ;
+						
 						dic.req.dic = 0 ;
 						
 						$("#dic_label").append( data ) ;
@@ -807,6 +855,8 @@ var dic = {
 						$('#dic_label img.indicator').replaceWith( dic.dic_count ) ;
 		
 						dic.binding.init() ;
+						
+						$.event.trigger("search-complete" , term ) ;
 					
 					}
 				});
@@ -822,6 +872,8 @@ var dic = {
 				
 					//$.post( "./hyperactive.php" , { flag: "fmp" , q: term } , function( data ) {
 		
+						$.event.trigger("search-start", term);
+						
 						dic.req.fmp = 0 ;
 						dic.fmp_count = 0 ;
 		
@@ -844,6 +896,8 @@ var dic = {
 							}
 							el.toggle() ;
 						});
+
+						$.event.trigger("search-complete" , term) ;
 					}
 				});
 			}
@@ -858,6 +912,8 @@ var dic = {
 				
 						//$.post( "./hyperactive.php" , { flag: "spotlight" , q: term } , function( data ) {
 		
+						$.event.trigger("search-start", term);
+						
 						dic.req.spot = 0 ;
 						
 						$("#spot_label").append( data ) ;
@@ -889,6 +945,8 @@ var dic = {
 							el.toggle() ;
 						});
 						
+						$.event.trigger("search-complete" , term ) ;
+						
 					}
 		
 				});	
@@ -917,7 +975,7 @@ var dic = {
 			var term = $("#term").val() ;
 			
 			if ( this.validate( term ) ) {
-						
+				
 				//dic.abort_ajax() ; // TODO: fix this abort! right now it reloads the page on .abort()
 				
 				dic.prefs.view.toggle(0) ; // shouldn't need to do this, but just in case options are still showing
@@ -928,7 +986,8 @@ var dic = {
 				var options = dic.prefs.get( "string" ) ; // string param tells options to also include a url string of args
 	
 				if ( options.interm || options.indef ) {
-	
+					
+					dic.search_count = 0 ; // stores running tally of initiated searches for completion triggering					
 					$('title').html("ReSearch: " + term ) ;
 					
 					store_history( term , arguments.callee.caller ) ;
@@ -936,38 +995,15 @@ var dic = {
 					var head = get_categories_html() ;
 					$("#output").append( head ) ;
 	
-					search_dictionary( term , options.string ) ;
-					
-					if ( dic.user == 1 ) {
-						search_filemaker( term, options ) ;
-					}
-	
-					search_spotlight( term , options ) ;
-					
-					//search internet sources (may need to put this back in search_dictionary before dic.binding.init())
-					
-					if ( ischinese( term ) ) {
-	
-						this.google( "zdic.net", term , 0 ) ;
-						this.google( "nciku.com", term , 0 ) ;
-	
-					} else {
-	
-						this.google( "tbrc.org", term , 0 ) ;
-						this.google( "jstor.org", term , 0 ) ;
-						this.google( "otdo.aa.tufs.ac.jp", term , 0 ) ;
-	
-					}
-	
-					this.google( "" , term , 0 ) ;
-	
+					search_( term , options );					
 				}
+				
 				return false ;
 			}
 		},
 		
 		google: function( site , term , start ) {
-		
+			
 			var header = "" ;
 			
 			switch( site ) {
@@ -1003,6 +1039,8 @@ var dic = {
 			
 			$.getJSON( url , function (data) {
 			   
+				$.event.trigger("search-start", term);
+			
 				if (data.responseData.results && data.responseData.results.length > 0) {
 					
 					var results = data.responseData.results;
@@ -1054,9 +1092,11 @@ var dic = {
 						return false ;
 						
 					}) ;
-	
-			   }
-	
+					
+			   	}
+			   	
+				$.event.trigger("search-complete" , term ) ;
+
 			});
 		},
 		

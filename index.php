@@ -15,7 +15,7 @@
 	<link rel="stylesheet" href="./inc/css/jquery-ui-1.8.1.custom.css" />
 	<link rel="stylesheet" href="./inc/css/jquery.autocomplete.css" />
 	<link rel="stylesheet" href="./inc/css/dic.css" />
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>  
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>  
 	<script>!window.jQuery && document.write('<script src="./inc/js/jquery-1.4.2.min.js"><\/script>')</script>
 	<script src="./inc/js/facebox.js"></script>
 	<script src="./inc/js/hoverIntent.mini.js"></script>
