@@ -68,9 +68,10 @@
 	</div>	
 </header>
 
-<div id="external"></div>	
-<div id="output"></div>	
-
+<section id="main">
+	<div id="external"></div>	
+	<div id="output"></div>	
+</section>
 
 <script type="text/javascript">
   var uservoiceOptions = {

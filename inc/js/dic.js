@@ -3,8 +3,6 @@ html5history = Modernizr.history ;
 
 var dic = {
 	
-	req: {},
-	
 	binding: {
 		
 		clicks: {
@@ -224,22 +222,19 @@ var dic = {
 		init: function() {
 			
 			this.hover.init() ;
-			this.clicks.init() ;			
+			this.clicks.init() ;
 		}
 		
 	},
 	
-	//TODO: better abort (using jquery ajax queue?)
+	clear_canvas: function() {
 	
-	abort_ajax: function() {
-		if ( typeof(dic.req.dic) != "undefined" && dic.req.dic != 0 ) {
-			for ( r in dic.req ) {
-				if ( dic[r] != 0 ) {
-					dic[r].abort() ;
-				}
-			}
+		$("#output").empty() ;
+		$("#external").empty() ;
+		
+		if ( window.location.hash != "" ) {
+			$("#term").val('');				
 		}
-		return false ;
 	},
 	
 	definition: {
@@ -821,15 +816,13 @@ var dic = {
 				
 				$.event.trigger("search-start" , term ) ;
 				
-				dic.req["dic"] = $.ajax({
+				$.ajax({
 					type: "POST",
 					url: "./hyperactive.php",
 					data: "flag=lookup&q=" + term + options ,
 					success: function(data){
 		
 					//$.post("./hyperactive.php" , { flag: "lookup" , q: term , s1: options.interm , s2: options.indef , ex: options.exact , st: options.starts, fuzzy: options.fuzzy, fuzzyl: options.fuzzyl, abbreviations: options.abbreviations } , function( data ) {
-						
-						dic.req.dic = 0 ;
 						
 						$("#dic_label").append( data ) ;
 		
@@ -847,7 +840,7 @@ var dic = {
 		
 				$.event.trigger("search-start", term);
 
-				dic.req["fmp"] = $.ajax({
+				$.ajax({
 					type: "POST",
 					url: "./hyperactive.php",
 					data: "flag=fmp&q=" + term ,
@@ -855,7 +848,6 @@ var dic = {
 				
 					//$.post( "./hyperactive.php" , { flag: "fmp" , q: term } , function( data ) {
 
-						dic.req.fmp = 0 ;
 						dic.fmp_count = 0 ;
 		
 						$("#fmp_label").append( data ).find("input[id^=fmp_count_]").each( function() {
@@ -887,16 +879,14 @@ var dic = {
 				
 				$.event.trigger("search-start", term);
 
-				dic.req["spot"] = $.ajax({
+				$.ajax({
 					type: "POST",
 					url: "./hyperactive.php",
 					data: "flag=spotlight&q=" + term ,
 					success: function(data){
 				
 						//$.post( "./hyperactive.php" , { flag: "spotlight" , q: term } , function( data ) {
-						
-						dic.req.spot = 0 ;
-						
+												
 						$("#spot_label").append( data ) ;
 		
 						dic.spot_count = $('#spot_count').val() ;										
@@ -936,18 +926,20 @@ var dic = {
 			function store_history( term , caller ) {
 				
 				if ( html5history ) {
-				
-					if ( caller.toString().indexOf("( e )") > -1 ) {
 					
+					if ( caller.toString().indexOf("( e )") > -1 || window.location.hash == "#" + term ) {
+						//console.log("replace: " + term)
 						window.history.replaceState( term , term , "/dic/#" + term ) ;
 					
 					} else {
-					
+						//console.log("push: " + term)
 						window.history.pushState( term , term , "/dic/#" + term ) ;
 					}
 					
+					//dic.search.last_term = term ;
+					
 				} else {
-				
+				//	console.log("what?");
 					var win = window.location ;
 					window.location = "http://" + win.hostname + win.pathname + "#" + term ;
 				}		
@@ -957,12 +949,9 @@ var dic = {
 			
 			if ( this.validate( term ) ) {
 				
-				//dic.abort_ajax() ; // TODO: fix this abort! right now it reloads the page on .abort()
-				
+				dic.clear_canvas() ;
+			
 				dic.prefs.view.toggle(0) ; // shouldn't need to do this, but just in case options are still showing
-	
-				$("#output").empty() ;
-				$("#external").empty() ;
 	
 				var options = dic.prefs.get( "string" ) ; // string param tells options to also include a url string of args
 	
@@ -1109,7 +1098,7 @@ var dic = {
 				},
 
 				doc: function() {
-					$(document).bind("click", function(event) {
+					$(document).live("click", function(event) {
 						if( !$(event.target).closest(".options_container").length ) {
 							dic.prefs.view.toggle(0);
 						} ;
@@ -1165,7 +1154,9 @@ var dic = {
 							$.event.trigger("search-complete-all" , term );
 						}
 					} else {
-						//console.log("done");
+						if ( html5storage && html5history ) {
+							sessionStorage.setItem( term , $("#main").html() ) ;
+						}
 					}
 					return false;
 				});
@@ -1450,15 +1441,23 @@ var dic = {
 					if ( html5history ) {
 					
 						window.onpopstate = function( e ) {
-						
-							if ( e.state != null ) {
-
-								$('#term').val(unescape(e.state)) ;
-								dic.search.go() ;
+							
+							//console.log(e);
+							
+							if ( e.state != null && e.state != "" ) {
+								var term = unescape(e.state),
+									store = sessionStorage.getItem( term ) ;
+									
+								$('#term').val( term ) ;
+								$('#main').html( store ) ;
+								
+								if ( !store ) { dic.search.go() }
+								
+								dic.binding.init();								
 								
 							} else {
-							
-								window.location.reload();
+
+								dic.clear_canvas();
 							}
 							
 						};
@@ -1556,7 +1555,6 @@ $(function() {
 	*/
 	
 	dic.init() ;
-	
-					
+			
 	
 });
