@@ -1,6 +1,6 @@
 <?
 
-class term {
+class term extends template {
 	
 	const tbl = "term" ;
 	

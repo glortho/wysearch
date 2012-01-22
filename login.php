@@ -15,7 +15,7 @@ if ( $_REQUEST["flag"] == "failed" ) {
 
 ?>
 
-<div class="flash">Login failed. Try again.</div>
+<div id='flash' class="flash">Login failed. Try again.</div>
 
 <? } ?>
 
@@ -48,8 +48,7 @@ if ( $_REQUEST["flag"] == "failed" ) {
 
 <script type="text/javascript">
 	$(function(){
-		setTimeout( function() { $(".flash").fadeIn("slow") } , 300 );
-		setTimeout( function() { $(".flash").fadeOut("slow") } , 3000 );
+		setTimeout( function() { $("#flash").fadeIn("slow").delay(3000).fadeOut('slow') } , 300 );
 	});
 </script>
 

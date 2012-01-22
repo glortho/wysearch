@@ -124,7 +124,7 @@
 		
 		function fail() {
 			
-			//echo $this->data->code . ": " & &this->data->message
+			//echo $this->data->code . ": " . $this->data->message;
 			
 			echo "<input type='hidden' id='fmp_count_" . get_class($this) . "' value='0'>";
 			
@@ -306,8 +306,8 @@
 				'Colophon Rediscovery English' ,
 				'questions::question' ,
 				'questions::answer' ,
-				'sa bcad::Title English' ,
-				'sa bcad::Title Wylie'),
+				'section::Title English' ,
+				'section::Title Wylie'),
 			"sort" => "Title English") ;
 		
 		protected $outrows = array(

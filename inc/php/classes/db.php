@@ -3,7 +3,7 @@
 class db {
 
 	function db() {
-		$this->connectID = mysql_pconnect(DB_HOST . ":/tmp/mysql.sock", DB_USER, DB_PASS);
+		$this->connectID = mysql_pconnect(DB_HOST, DB_USER, DB_PASS);
 		mysql_select_db(DB_NAME, $this->connectID);
 		$this->error = array();
 	}

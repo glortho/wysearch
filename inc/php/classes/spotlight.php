@@ -107,6 +107,8 @@ class spotlight extends template {
 		
 		exec( $scr , $outarr , $res ) ;
 
+		echo $res;
+
 		$this->data = array() ;
 		
 		$this->count = 0 ;

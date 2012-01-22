@@ -1,4 +1,4 @@
-g<?
+<?
 
 	require_once './init.php';
 	
@@ -224,6 +224,9 @@ g<?
 		}
 		
 		function summarize() {
+			
+			echo '<span style="font-size: 1.1em; color: #000; font-style: italic">Double-click near the <span class="highlight">highlighted word(s)</span> to expand the context.</span>
+<hr>';
 			
 			$args = func_get_args() ;
 			

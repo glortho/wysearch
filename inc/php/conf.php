@@ -2,16 +2,16 @@
 
 	$mode = "" ;
    	
-   	define("DOC_ROOT",$_SERVER["DOCUMENT_ROOT"]);
+  define("DOC_ROOT",$_SERVER["DOCUMENT_ROOT"]);
 	define("DB_HOST","localhost");
   	
 	if ( $mode == "" ) {
 	
 		define("DOMAIN","localhost");
-		define("DB_USER","root");
-		define("DB_PASS","mus1cs");
+		define("DB_USER","");
+		define("DB_PASS","");
 		define("DB_NAME","dic");	
- 		define("WEB_DIR","/~jed/dic/");
+ 		define("WEB_DIR","/dic/");
 	
 	}
    	

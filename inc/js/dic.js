@@ -1,240 +1,23 @@
+/*
+ *
+ *	Note: This is old and ugly Javascript. Desperately in need of modernizing and optimizing!
+ *
+ */
+
 html5storage = Modernizr.localstorage ;
 html5history = Modernizr.history ;
 
 var dic = {
-	
-	binding: {
-		
-		clicks: {
-			
-			add_buttons: function() {
-				$('#submit_def').click( 
-					function() { dic.definition.submit_def( this ) }
-				) ;
-				$('#cancel_def').click( function() { $('#new').remove() ; } );
-			},
 
-			add_def: function() {
-
-				$('.add').click( function() {
-					var htm = 
-					"<tr id='new'>" +
-						"<td class='def'></td>" +
-						"<td class='def'>" +
-							"<span class='source'></span> &nbsp; " +
-							"<span class='definition'>" +
-								"<textarea id='def_new' rows='2' cols='50'></textarea>" +
-								"<input id='submit_def' name='submit' style='position:relative; bottom:15px; left:2px' type='button' value='done'> " +
-								"<input id='cancel_def' name='cancel' style='position:relative; bottom:15px; left:2px' type='button' value='cancel'>" +
-							"</span>" +
-						"</td>" +
-					"</tr>" ;
-					var anc = $(this).closest("tr") ;
-					if ( anc.nextAll('.term_row:first').length > 0 ) {
-						anc.nextAll('.term_row:first').before( htm ) ;
-					} else {
-						anc.nextAll('tr:last').after( htm ) ;
-					}
-
-					$('#def_new').focus() ;
-					dic.selectedInput = $('#def_new') ;
-
-					dic.binding.clicks.add_buttons() ;
-
-				});
-			},
+	consume_external: function() {
 			
-			def: function( el ) {
-				el.bind( "click" , function() {
-					if ( dic.keydown.command == true ) { 
-						$(this).unbind("click") ;
-						dic.definition.edit( $(this) ) ;
-					}
-				}) ;
-			},
-			
-			delete_def: function( el ) {
-				
-				$('.delete').click( function() {
-					var term = el.parent().attr("id") ;
-					if ( confirm( "Are you sure you want to delete this term and all definitions?" ) ) {
-						$.post( "./hyperactive.php" , { flag: "delete_term" , id: term } , function( data ) {
-							el.closest("tr").fadeOut("slow", function() {
-								dic.search.go() ;
-							}) ;
-						}) ;
-					}
-
-				});	
-			},
-			
-			edit_buttons: function( el ) {
-				var id = el.attr("id") ;
-
-				el.children("input[name=submit_edit]").click( function() {
-					dic.definition.submit_edit( id ) ; 
-				}) ;
-
-				el.children("input[name=cancel]").click( function() {
-					$("#" + id ).html( $("#" + id).children("textarea").val() ) ;
-					dic.binding.clicks.def( $("#" + id ) ) ; 
-				}) ;
-			},
-			
-			new_def: {
-				
-				init: function( el ) {
-					
-					dic.binding.clicks.add_def() ;
-					dic.binding.clicks.delete_def( el ) ;
-					
-				}
-				
-			},
-			
-			peek_inside: function( el ) {
-				dic.peek_url = el.attr("href") ;
-				$.facebox( { ajax: dic.peek_url } ) ; 				
-			},
-
-			init: function() {
-				
-				if ( dic.user == 1 ) {
-					this.def( $("span.definition") ) ;
-				}
-			}
-			
-		},
-		
-		hover: {
-			
-			category_hover: function() {
-			
-				if ( dic.user == 1 ) {
-				
-					$('.label_header').hoverIntent({ 
-						over: function() {
-							var x = $(this).width() + 52 ;
-							var y = $(this).closest('.label').offset().top - 50 ;
-							$(this).append("<a class='addspan' href='#'><img onclick='dic.kill_click=true' align='middle' src='./images/add-icon.png' width='20' height='20' /></a>" ) ;
-							$('.addspan').css({ "left": x , "top": y }).click( function() {
-								dic.definition.start_new($(this)) ;
-							});
-						},
-						interval: 200 ,
-						out: function() {
-							$(".addspan").remove() ;
-						},
-						timeout: 200
-					}) ;
-				
-				}
-				
-			},
-			
-			def_hover: function() {
-				
-				if ( dic.user == 1 ) {
-				
-					$('td.def').parent().hoverIntent({
-						over: function() {
-							$(this).children(".def_spacer").append("<img onclick='dic.definition.remove(this)' class='delete' align='right' src='./images/delete-icon.png' height='16' width='16' />") ;
-							$(this).find(".votes").show() ;
-	
-						},
-						interval: 100 ,
-						out: function() {
-							$(this).children(".def_spacer").children(".delete").remove() ;
-							$(this).find(".votes").hide() ;
-						},
-						timeout: 100
-					});
-					
-				}
-				
-			},
-			
-			tab_hover: function() {
-				$(".tab").hoverIntent({
-					over: function() {
-						$(this).hide( "fast", function() {
-							$("div.body").slideDown("fast") ;
-						})
-					},
-					interval: 50,
-					out: function() {},
-					timeout: 100
-				}) ;
-			},
-			
-			term_hover: function() {
-			
-				if ( dic.user == 1 ) {
-				
-					$('td.def_term b').hoverIntent({ 
-						over: function() {
-							var x = $(this).width() + 52 ;
-							var y = $(this).parent().offset().top - 42 ;
-							$(this).append(
-								" <span class='addspan'><img align='left' class='add' src='./images/add-icon.png' height='20' width='20' />" + 
-								" <img class='delete' align='right' src='./images/delete-icon.png' height='20' width='20' /></span>"
-								) ;
-							$('.addspan').css({ "left": x , "top": y }) ;
-	
-							dic.binding.clicks.new_def.init( $(this) ) ;
-						},
-						interval: 200 ,
-						out: function() {
-							$(".addspan").remove() ;
-						},
-						timeout: 200
-					}) ;
-				
-				}
-					
-			},
-			
-			vote_hover: function() {
-				
-				if ( dic.user == 1 ) {
-				
-					$(".votes").hoverIntent({
-						over: function() {
-							dic.definition.vote.view.action($(this));
-						},
-						interval: 80 ,
-						out: function() {
-							dic.definition.vote.view.show($(this));
-						},
-						timeout: 80
-					}) ;
-					
-				}
-			},
-			
-			init: function() {
-				
-				dic.initializer(this);				
-			}
-			
-		},
-		
-		init: function() {
-			
-			this.hover.init() ;
-			this.clicks.init() ;
-		}
-		
-	},
-	
-	clear_canvas: function() {
-	
-		$("#output").empty() ;
-		$("#external").empty() ;
-		
-		if ( window.location.hash != "" ) {
-			$("#term").val('');				
-		}
+		var q = ( location.search === '' ) ? location.hash : location.search ;
+		if ( q !== "" ) {
+			q = q.split(/#/) ;
+			q = q[1].replace( /\+/g , " " ) ;
+			$('#term').val(unescape(q)) ;
+			dic.search.go() ;
+		}	
 	},
 	
 	definition: {
@@ -248,9 +31,9 @@ var dic = {
 	
 			el.html( htm_new ) ;
 			$('#edit_old').focus() ; 
-			dic.selectedInput = $('#edit_old') ;
+			dic.ui.selectedInput = $('#edit_old') ;
 	
-			dic.binding.clicks.edit_buttons( el ) ;
+			dic.ui.binding.clicks.edit_buttons( el ) ;
 		},
 
 		remove: function( el ) {
@@ -272,12 +55,12 @@ var dic = {
 						"<div class='label'>Term</div><div class='field'><input id='term_new' name='term' type='text' size='50' value='" + val + "'></div><br>" +
 						"<div class='label'>Def</div><div class='field'><input id='def_new' name='def' type='text' size='50'></div><br>" +
 						"<div class='label'>Source</div><div class='field'><input id='source_new' name='source' type='text' size='8'></div><br>" +
-						"<div class='label'><input id='submit_new' name='submit_new' type='submit' value='done'></div>"
+						"<div class='label'><input id='submit_new' name='submit_new' type='submit' value='done'></div>" +
 					"</form>" + 
 				"</div>" ;
 			$.facebox( htm ) ;
 			$('#term_new').focus() ;
-			dic.selectedInput = $('#term_new') ;
+			dic.ui.selectedInput = $('#term_new') ;
 		},
 
 		submit_def: function( el ) {
@@ -285,14 +68,14 @@ var dic = {
 			var id = $(el).closest("tr").prevAll(".term_row:first").children("td").attr("id") ;
 			$.post( './hyperactive.php' , { flag: flag , term_id: id , def: $('#def_new').val() } , function( data ) {
 				dic.search.go() ;
-			})
+			});
 		},
 		
 		submit_edit: function( id ) {
 			var flag = "edit" ;
 			$.post( "./hyperactive.php" , { flag: flag , id: id , def: $('#edit_old').val() } , function( data ) {
 				$("#" + id ).html( data ) ;
-				dic.binding.clicks.def( $("#" + id) ) ;
+				dic.ui.binding.clicks.def( $("#" + id) ) ;
 			}) ;
 		},
 		
@@ -302,7 +85,7 @@ var dic = {
 			var source = $('#source_new').val() ;
 			var flag = "new" ;
 			$.post( "./hyperactive.php" , { flag: flag , term: term , def: def , source: source } , function( data ) {
-				if ( data != "" ) {
+				if ( data !== "" ) {
 					$('.new').html( data ) ;
 				} else {
 					$(document).trigger('close.facebox') ;
@@ -316,10 +99,11 @@ var dic = {
 		vote: {
 	
 			go: function( el, dir ) {
-				var def = $(el).closest(".votes").prev(".definition")
-				id = def.attr("id") ;
-				def = def.html() ;
-				var htm = 
+				var def = $(el).closest(".votes").prev(".definition"),
+					id = def.attr("id");
+
+					def = def.html();
+				var	htm = 
 					"<div class='details'>" +
 						"Include as much info as you can about the text or context that led you to vote this way.<br/>" +
 						"<form action='' method='post' onsubmit='javascript:dic.definition.vote.submit(" + id + "," + dir + "); return false;'>" +
@@ -332,7 +116,7 @@ var dic = {
 							"<div class='label'>Page.line</div><div class='field'><input id='context_page' name='context_page' type='text' size='10'/></div><br>" +
 							"<div class='label'>Note</div><div class='field'><textarea rows='3' cols='40' name='context_notes' id='context_notes'>" + def + "</textarea></div><br>" +
 							"<div class='label'><input id='submit_new' name='submit_new' type='submit' value='done'/></div>" +
-						"</form>" + 
+						"</form>" +
 					"</div>";
 				$.facebox(htm) ;
 				$("#context_nickname").focus() ;
@@ -375,7 +159,8 @@ var dic = {
 					cnt: $('#context_notes').val()
 					} , 
 					function( data ) {
-										
+						var trend;
+							
 						$(document).trigger('close.facebox') ;
 						
 						var targel = $("#" + id ).next() ;
@@ -383,7 +168,7 @@ var dic = {
 						
 						// dynamically increment displayed vote count
 						
-						var targel = targel.children(".vote_count") ;
+							targel = targel.children(".vote_count") ;
 						var old_votes = targel.html() ;
 						var new_votes = Number(old_votes) + Number(dir) ;
 						
@@ -394,9 +179,9 @@ var dic = {
 						var tr = targel.closest("tr") ;
 						var trfirst = tr.prevAll(".term_row:first") ;
 						if ( tr.nextAll('.term_row:first').length > 0 ) {
-							var trend = tr.nextAll('.term_row:first') ;
+							trend = tr.nextAll('.term_row:first') ;
 						} else {
-							var trend = tr.nextAll('tr:last') ;
+							trend = tr.nextAll('tr:last') ;
 						}
 						trend = trend.html() ;
 						
@@ -444,15 +229,9 @@ var dic = {
 			}
 		}
 	},
-		
-	get_user: function() {
-		if ( typeof(dic.user) == "undefined" || dic.user == "" ) {
-			return $.cookie("login") ;		
-		}
-		return dic.user ;
-	},
 	
 	initializer: function( obj ) {
+		var o;
 		for ( o in obj ) {
 			if ( o != "init" ) {
 				eval("obj." + o + "()") ;
@@ -463,17 +242,18 @@ var dic = {
 	prefs: {
 		
 		apply: function() {
-			if ( this.selected && this.selected.length > 0 ) { 	//set in dic.init.get_settings
-				var dicarray = this.selected.split("&") ;		//format is standard url args, so get array of args
+			if ( this.selected && this.selected.length > 0 ) {	//set in dic.init.get_settings
+				var i,
+					dicarray = this.selected.split("&") ;		//format is standard url args, so get array of args
 				for ( i in dicarray ) {
 					var item = dicarray[i] ;
 					if ( item.length > 0 ) {
-						var item = dicarray[i].split("=");	//split into {key,val}
+						item = dicarray[i].split("=");	//split into {key,val}
 						switch( item[0] ) {
 							case "fuzzyl" :
 								this.fuzzy.level_set( item[1] ) ;
 								break;
-							case "" : 	//in case one is empty, do nothing
+							case "" :	//in case one is empty, do nothing
 								break;
 							default:
 								var checked = ( item[1] === "true" ) ; // only slider require different treatment, rest are dom els
@@ -482,7 +262,7 @@ var dic = {
 						}
 					}
 				}
-				if ( $("#fuzzy").attr("checked") == true ) { $("#slider_box").show()}
+				if ( $("#fuzzy").attr("checked") === true ) { $("#slider_box").show();}
 			} else {
 				//this.selected = dic.get_defaults() ;
 			}
@@ -496,19 +276,20 @@ var dic = {
 			
 			level_set: function(val) {
 
-				var tipel = $("#tip") ;
+				var tipel = $("#tip"),
+					l ;
 
 				if ( $(".options").is(":visible") && !tipel.is(":visible") ) {
 					tipel.slideDown("fast") ;
 				}
-				if ( typeof(val.slider_pos) != "undefined" ) { 	// caller function is fuzzy_stop (having dragged the slider manually)
-					var l = $("div[id^=level]").length ;
+				if ( typeof(val.slider_pos) != "undefined" ) {	// caller function is fuzzy_stop (having dragged the slider manually)
+					l = $("div[id^=level]").length ;
 				} else {									// caller is apply_settings or a keypress
 					var slider_val = (val-0.1)*25 ;
 					this.slider.compare( slider_val ) ;
 					this.slider.set( slider_val ) ;
-					var l = val ;
-				} 	
+					l = val ;
+				}	
 				this.level = l ;
 				dic.prefs.view.humanize() ;
 			},
@@ -522,20 +303,20 @@ var dic = {
 						$("#level4").remove() ;
 					}
 					if ( val >= 25 ) {
-						if ( $("#level2").length == 0 ) {
+						if ( $("#level2").length === 0 ) {
 							$("#tip_content").append("<div class='tip_item' id='level2'><strong>2</strong> Try similar <b>root letters</b> and <b>vowels</b></div>" );
 						}
 						$("#level3").remove() ;
 						$("#level4").remove() ;
 					}
 					if ( val >= 50 ) {
-						if ( $("#level3").length == 0 ) {
+						if ( $("#level3").length === 0 ) {
 							$("#tip_content").append("<div class='tip_item' id='level3'><strong>3</strong> Try adding/subtracting <b>particles</b></div>" );
 						}
 						$("#level4").remove() ;
 					}
 					if ( val >= 75 ) {
-						if ( $("#level4").length == 0 ) {
+						if ( $("#level4").length === 0 ) {
 							$("#tip_content").append("<div class='tip_item' id='level4'><strong>4</strong> Tibetan black magic</div>" );
 						}
 					}
@@ -574,15 +355,16 @@ var dic = {
 			this.selected = {};
 			
 			function get_abbreviations() {
-				var abbr_checked = $("input[id^=dic_]:checked");
+				var abbr,
+					abbr_checked = $("input[id^=dic_]:checked");
 				if ( !abbr_checked.length ) {
 					return "no dictionaries selected" ;
 				} else {
-					var abbr = $("input[type=checkbox][id^=dic_]") ;
+					abbr = $("input[type=checkbox][id^=dic_]") ;
 					if ( abbr.length == abbr_checked.length ) {
 						return "all dictionaries" ;
 					} else {
-						var abbr = new Array() ;
+						abbr = [];
 						var arr = "" ;
 						abbr_checked.each( function() {
 							arr = $(this).attr("id").split("_") ;
@@ -593,19 +375,22 @@ var dic = {
 				}
 			}
 			
+			var that = dic.prefs;
+
 			$("input[type=checkbox]").each( function(){
-				var that = dic.prefs;
 				id = $(this).attr("id") ;
 				that.selected[id] = $(this).attr("checked") ;
 			});
 
-			this.selected["abbreviations"] = get_abbreviations() ;
-			this.selected["fuzzyl"] = this.fuzzy.level_get() ;
+			this.selected.abbreviations = get_abbreviations() ;
+			this.selected.fuzzyl = this.fuzzy.level_get() ;
 
 			if ( arguments.length ) {
-				this.selected["string"] = "" ;
+				var o;
+
+				this.selected.string = "" ;
 				for ( o in this.selected ) {
-					this.selected["string"] += "&" + o + "=" + this.selected[o] ;
+					this.selected.string += "&" + o + "=" + this.selected[o] ;
 				}
 			}
 
@@ -625,6 +410,8 @@ var dic = {
 				var that = dic.prefs;
 				var options = that.get() ;
 				var store = "" ;
+				var i;
+
 				for ( i in options ) {
 					store += "&" + i + "=" + options[i] ;
 				}
@@ -636,7 +423,7 @@ var dic = {
 				that.selected = options ;
 				that.view.toggle(0) ;
 				$.facebox("Settings saved!") ;
-				window.setTimeout( function() {$(document).trigger('close.facebox')} , 1300);
+				window.setTimeout( function() {$(document).trigger('close.facebox');} , 1300);
 				$("#term").focus() ;
 				return false; 
 			}
@@ -647,13 +434,14 @@ var dic = {
 		
 			checkbox_clicked: function( el ) {
 			
-				var that = dic.prefs;
+				var that = dic.prefs,
+					checked;
 				
 				if ( dic.keydown.o ) {
-					var checked = !el.attr("checked") ;
+					checked = !el.attr("checked") ;
 					el.attr("checked" , checked ) ;
 				} else {
-					var checked = el.attr("checked") ;
+					checked = el.attr("checked") ;
 				}
 				
 				id = el.attr("id") ;
@@ -693,17 +481,16 @@ var dic = {
 					default:
 						break;
 				}
-		
-				//$('#term').focus() ; 
-				//dic.selectedInput = $('#term') ;
+
 				this.humanize() ;
 			},
 			
 			humanize: function() {
 				var that = dic.prefs;
 				var opts = that.get() ;
-				var scope = new Array();
-				var precision = new Array();
+				var scope = [];
+				var precision = [],
+					o;
 				for ( o in opts ) {
 					if ( opts[o] !== false) {
 						if ( o == "exact" ) {
@@ -758,43 +545,57 @@ var dic = {
 				$("input[type=checkbox][id^=dic_]").attr("checked", !this.dic_toggle ) ;
 				this.humanize();
 			}
+		},
+		
+		init: function() {
+		
+			this.selected = this.storage.retrieve() ;
+
+			this.apply( this.selected ) ;
+
+			this.view.humanize() ;
 		}
 		
 	},
 	
 	search: {
+
+		titles : {
+			'tbrc.org': 'TBRC',
+			'books.google.com': 'Google Books',
+			'jstor.org': 'JSTOR',
+			'otdo.aa.tufs.ac.jp': 'Dunhuang'
+		},
 		
 		go: function() {
 			
 			function get_categories_html() {
 		
 				var out = "<div class='label' id='dic_label'><img class='icon' src='./images/dic.gray.png' width='30' height='30' /> <span class='label_header'>Dictionaries ( <img class='indicator' src='./images/indicator.gif' /> )</span></div>" ;
-				if ( dic.user == 1 ) {
+				if ( dic.user.id == 1 ) {
 					out += "<div class='label' id='fmp_label'><img class='icon' src='./images/fmp.gray.png' width='30' height='30' /> <span class='label_header'>FileMaker ( <img class='indicator' src='./images/indicator.gif' /> )</span></div>" ;
 				}
 				out += "<div class='label' id='spot_label'><img class='icon' src='./images/spot.gray.jpeg' width='30' height='30' /> <span class='label_header'>Spotlight ( <img class='indicator' src='./images/indicator.gif' /> )</span></div>" ;
 				return out ;
-			}
-			
+			}	
+					
 			function ischinese( term ) {
-				return ( term.match(/[a-z]/gi) == null ? true : false ) ;
+				return ( term.match(/[a-z]/gi) === null ? true : false ) ;
 			}
-			
+
 			function search_ ( term, options ) {
 				
 				var that = dic.search;
 				
-				dic.binding.init() ;
-				
 				search_dictionary( term , options.string ) ;
 					
-				if ( dic.user == 1 ) {
+				if ( dic.user.id == 1 ) {
 					search_filemaker( term, options ) ;
 				}
 
 				search_spotlight( term , options ) ;
 				
-				//search internet sources (may need to put this back in search_dictionary before dic.binding.init())
+				//search internet sources (may need to put this back in search_dictionary before dic.ui.binding.init())
 				
 				if ( ischinese( term ) ) {
 	
@@ -811,7 +612,7 @@ var dic = {
 	
 				that.google( "" , term , 0 ) ;
 			}
-			
+
 			function search_dictionary( term , options ) {
 				
 				$.event.trigger("search-start" , term ) ;
@@ -830,12 +631,14 @@ var dic = {
 		
 						$('#dic_label img.indicator').replaceWith( dic.dic_count ) ;
 						
+						dic.ui.binding.init() ;
+						
 						$.event.trigger("search-complete" , term ) ;
 					
 					}
 				});
 			}
-			
+
 			function search_filemaker( term , options ) {
 		
 				$.event.trigger("search-start", term);
@@ -851,21 +654,22 @@ var dic = {
 						dic.fmp_count = 0 ;
 		
 						$("#fmp_label").append( data ).find("input[id^=fmp_count_]").each( function() {
-							dic.fmp_count += parseInt($(this).val()) ;
+							dic.fmp_count += parseInt($(this).val(), 10) ;
 						}) ;
 		
 						$('#fmp_label img.indicator').replaceWith( dic.fmp_count.toString() ) ;
 		
-						if ( typeof(window['dic_count']) == "undefined" || dic.dic_count == "0" ) {
+						if ( typeof(window.dic_count) == "undefined" || dic.dic_count == "0" ) {
 							$('#fmp_label .results_table').show() ;
 						}
 		
 						$('#fmp_label .spotlight_kind').click( function() {
+							var el;
 							var par = $(this).parent() ;
 							if ( par.nextAll(".spotlight_header").length > 0 ) {
-								var el = par.nextUntil(".spotlight_header:first") ;
+								el = par.nextUntil(".spotlight_header:first") ;
 							} else {
-								var el = par.nextAll() ;
+								el = par.nextAll() ;
 							}
 							el.toggle() ;
 						});
@@ -874,7 +678,7 @@ var dic = {
 					}
 				});
 			}
-			
+
 			function search_spotlight( term , options ) {
 				
 				$.event.trigger("search-start", term);
@@ -897,21 +701,22 @@ var dic = {
 							.end()
 							.find(".spot_ref").
 								click( function() {
-									dic.binding.clicks.peek_inside($(this)) ;
+									dic.ui.binding.clicks.peek_inside($(this)) ;
 									return false ;
 		
 								});
 		
-						if ( typeof(window['dic_count']) == "undefined" || dic.dic_count == "0" ) {
+						if ( typeof(window.dic_count) == "undefined" || dic.dic_count == "0" ) {
 							$('#spot_label .results_table').show() ;
 						}
 		
 						$('#spot_label .spotlight_kind').click( function() {
 							var par = $(this).parent() ;
+							var el;
 							if ( par.nextAll(".spotlight_header").length > 0 ) {
-								var el = par.nextUntil(".spotlight_header:first") ;
+								el = par.nextUntil(".spotlight_header:first") ;
 							} else {
-								var el = par.nextAll() ;
+								el = par.nextAll() ;
 							}
 							el.toggle() ;
 						});
@@ -949,7 +754,7 @@ var dic = {
 			
 			if ( this.validate( term ) ) {
 				
-				dic.clear_canvas() ;
+				dic.ui.clear_canvas() ;
 			
 				dic.prefs.view.toggle(0) ; // shouldn't need to do this, but just in case options are still showing
 	
@@ -976,26 +781,7 @@ var dic = {
 			
 			$.event.trigger("search-start", term);
 					
-			var header = "" ;
-			
-			switch( site ) {
-				
-				case "tbrc.org": 
-					header = "TBRC" ; break ;
-				case "books.google.com": 
-					header = "Google Books" ; break ;
-				case "jstor.org": 
-					header = "JSTOR" ; break ;
-				case "nciku.com": 
-					header = "NCIKU" ; break ;
-				case "zdic.net": 
-					header = "ZDIC" ; break ;
-				case "otdo.aa.tufs.ac.jp":
-					header = "Dunhuang" ; break ;					
-				default: 
-					header = "Google" ; break ;
-				
-			}
+			var header = dic.search.titles[site] || 'Google';
 			
 			var header_display = $("#" + header).children(".results_group").css("display") ;		
 			
@@ -1004,13 +790,14 @@ var dic = {
 				dic.global_term = term ;
 			}
 					
-			var q = ( site != "" ) ? "site:" + site + " " : "" ;
+			var q = ( site !== "" ) ? "site:" + site + " " : "" ;
 			q += "\"" + term + "\"" ;
 			
 			var url = "http://ajax.googleapis.com/ajax/services/search/web?q=" + q + "&rsz=large&v=1.0&callback=?&start=" + start + "&key=ABQIAAAAPx_9rYqOcMbR1P86dhjbLBQH-wIUnrTxOqn0uq2q7qb9I-e9QBQwwhLwxsysZibUOeIjwoh-INJKkg" ;
 			
 			$.getJSON( url , function (data) {
-			
+				var el;
+
 				if (data.responseData.results && data.responseData.results.length > 0) {
 					
 					var results = data.responseData.results;
@@ -1027,8 +814,8 @@ var dic = {
 						htm += "<div class='results_title'><a target='_blank' href='" + results[i].unescapedUrl + "'>" + results[i].titleNoFormatting + "</a></div>" ;
 						htm += "<div class='results'>" + content + "</div>" ;
 						
-						if ( site == "") {
-							htm += "<div class='results_url'>" + results[i].visibleUrl + "</div>" 
+						if ( site === "") {
+							htm += "<div class='results_url'>" + results[i].visibleUrl + "</div>" ;
 						}
 					} 
 					
@@ -1036,12 +823,12 @@ var dic = {
 					
 					if ( $( "#" + header ).length > 0 ) {
 						
-						var el = $( "#" + header ) ;
+						el = $( "#" + header ) ;
 						el.replaceWith( htm ) ;
 						
 					} else {
 						
-						var el = $("#external") ;
+						el = $("#external") ;
 						el.append( htm ) ;
 					}
 					
@@ -1063,8 +850,8 @@ var dic = {
 						
 					}) ;
 					
-			   	}
-			   	
+				}
+
 				$.event.trigger("search-complete" , term ) ;
 
 			});
@@ -1072,14 +859,241 @@ var dic = {
 		
 		validate: function( term ) {
 			var valid = {} ;
-			valid["term_exists"] = ( term != "" ) ;
-			valid["dics_checked"] = $("input[type=checkbox][id^=dic]:checked").length ;
+			valid.term_exists = ( term !== "" ) ;
+			valid.dics_checked = $("input[type=checkbox][id^=dic]:checked").length ;
 			if ( valid.term_exists && valid.dics_checked  ) {
 				return true ;
 			} else if ( !valid.dics_checked ) {
 				$.facebox("Select a dictionary, my friend.") ; //$.facebox( {ajax:"http://localhost/~jed/dic/hyperactive.php?flag=source_list"} ) ;
 			}
 			return false ;
+		}
+	},
+	
+	ui: {
+		binding: {
+			
+			clicks: {
+				
+				add_buttons: function() {
+					$('#submit_def').click( 
+						function() { dic.definition.submit_def( this ); }
+					) ;
+					$('#cancel_def').click( function() { $('#new').remove() ; } );
+				},
+	
+				add_def: function() {
+	
+					$('.add').click( function() {
+						var htm = 
+						"<tr id='new'>" +
+							"<td class='def'></td>" +
+							"<td class='def'>" +
+								"<span class='source'></span> &nbsp; " +
+								"<span class='definition'>" +
+									"<textarea id='def_new' rows='2' cols='50'></textarea>" +
+									"<input id='submit_def' name='submit' style='position:relative; bottom:15px; left:2px' type='button' value='done'> " +
+									"<input id='cancel_def' name='cancel' style='position:relative; bottom:15px; left:2px' type='button' value='cancel'>" +
+								"</span>" +
+							"</td>" +
+						"</tr>" ;
+						var anc = $(this).closest("tr") ;
+						if ( anc.nextAll('.term_row:first').length > 0 ) {
+							anc.nextAll('.term_row:first').before( htm ) ;
+						} else {
+							anc.nextAll('tr:last').after( htm ) ;
+						}
+	
+						$('#def_new').focus() ;
+						dic.ui.selectedInput = $('#def_new') ;
+	
+						dic.ui.binding.clicks.add_buttons() ;
+	
+					});
+				},
+				
+				def: function( el ) {
+					el.bind( "click" , function() {
+						if ( dic.keydown.command === true ) { 
+							$(this).unbind("click") ;
+							dic.definition.edit( $(this) ) ;
+						}
+					}) ;
+				},
+				
+				delete_def: function( el ) {
+					
+					$('.delete').click( function() {
+						var term = el.parent().attr("id") ;
+						if ( confirm( "Are you sure you want to delete this term and all definitions?" ) ) {
+							$.post( "./hyperactive.php" , { flag: "delete_term" , id: term } , function( data ) {
+								el.closest("tr").fadeOut("slow", function() {
+									dic.search.go() ;
+								}) ;
+							}) ;
+						}
+	
+					});	
+				},
+				
+				edit_buttons: function( el ) {
+					var id = el.attr("id") ;
+	
+					el.children("input[name=submit_edit]").click( function() {
+						dic.definition.submit_edit( id ) ; 
+					}) ;
+	
+					el.children("input[name=cancel]").click( function() {
+						$("#" + id ).html( $("#" + id).children("textarea").val() ) ;
+						dic.ui.binding.clicks.def( $("#" + id ) ) ; 
+					}) ;
+				},
+				
+				new_def: {
+					
+					init: function( el ) {
+						
+						dic.ui.binding.clicks.add_def() ;
+						dic.ui.binding.clicks.delete_def( el ) ;
+						
+					}
+					
+				},
+				
+				peek_inside: function( el ) {
+					dic.peek_url = el.attr("href") ;
+					$.facebox( { ajax: dic.peek_url } ) ;		
+				},
+	
+				init: function() {
+					
+					if ( dic.user.id == 1 ) {
+						this.def( $("span.definition") ) ;
+					}
+				}
+				
+			},
+			
+			hover: {
+				
+				category_hover: function() {
+				
+					if ( dic.user.id == 1 ) {
+					
+						$('.label_header').hoverIntent({ 
+							over: function() {
+								var x = $(this).width() + 52 ;
+								var y = $(this).closest('.label').offset().top - 50 ;
+								$(this).append("<a class='addspan' href='#'><img onclick='dic.kill_click=true' align='middle' src='./images/add-icon.png' width='20' height='20' /></a>" ) ;
+								$('.addspan').css({ "left": x , "top": y }).click( function() {
+									dic.definition.start_new($(this)) ;
+								});
+							},
+							interval: 200 ,
+							out: function() {
+								$(".addspan").remove() ;
+							},
+							timeout: 200
+						}) ;
+					
+					}
+					
+				},
+				
+				def_hover: function() {
+					
+					if ( dic.user.id == 1 ) {
+					
+						$('td.def').parent().hoverIntent({
+							over: function() {
+								$(this).children(".def_spacer").append("<img onclick='dic.definition.remove(this)' class='delete' align='right' src='./images/delete-icon.png' height='16' width='16' />") ;
+								$(this).find(".votes").show() ;
+		
+							},
+							interval: 100 ,
+							out: function() {
+								$(this).children(".def_spacer").children(".delete").remove() ;
+								$(this).find(".votes").hide() ;
+							},
+							timeout: 100
+						});
+						
+					}
+					
+				},
+
+				term_hover: function() {
+				
+					if ( dic.user.id == 1 ) {
+					
+						$('td.def_term b').hoverIntent({ 
+							over: function() {
+								var x = $(this).width() + 52 ;
+								var y = $(this).parent().offset().top - 42 ;
+								$(this).append(
+									" <span class='addspan'><img align='left' class='add' src='./images/add-icon.png' height='20' width='20' />" + 
+									" <img class='delete' align='right' src='./images/delete-icon.png' height='20' width='20' /></span>"
+									) ;
+								$('.addspan').css({ "left": x , "top": y }) ;
+		
+								dic.ui.binding.clicks.new_def.init( $(this) ) ;
+							},
+							interval: 200 ,
+							out: function() {
+								$(".addspan").remove() ;
+							},
+							timeout: 200
+						}) ;
+					
+					}
+						
+				},
+				
+				vote_hover: function() {
+					
+					if ( dic.user.id == 1 ) {
+					
+						$(".votes").hoverIntent({
+							over: function() {
+								dic.definition.vote.view.action($(this));
+							},
+							interval: 80 ,
+							out: function() {
+								dic.definition.vote.view.show($(this));
+							},
+							timeout: 80
+						}) ;
+						
+					}
+				},
+				
+				init: function() {
+					
+					dic.initializer(this);				
+				}
+				
+			},
+			
+			init: function() {
+				
+				this.hover.init() ;
+				this.clicks.init() ;
+			}		
+		},
+		
+		clear_canvas: function() {
+		
+			$("#output").empty() ;
+			$("#external").empty() ;
+		}
+	},
+	
+	user: {
+	
+		get: function() {
+			if ( typeof(dic.user.id) == "undefined" || dic.user.id === "" ) {
+				this.id = $.cookie("login") ;		
+			}
 		}
 	},
 
@@ -1101,7 +1115,7 @@ var dic = {
 					$(document).live("click", function(event) {
 						if( !$(event.target).closest(".options_container").length ) {
 							dic.prefs.view.toggle(0);
-						} ;
+						}
 					});
 				},
 				
@@ -1114,7 +1128,7 @@ var dic = {
 				labels: function() {
 					$(".label_header, .icon").live("click", function() { 
 						if ( !dic.kill_click ) {
-							$(this).nextAll(".results_table").toggle() 						
+							$(this).nextAll(".results_table").toggle();
 						}
 					});
 				},
@@ -1130,7 +1144,7 @@ var dic = {
 						$.post( url , { pos: pos , margin: margin } , function( data ) {
 							el.children(".summary_snippet").html("..." + data + "...");
 						});
-					})
+					});
 				},
 
 				init: function() {
@@ -1150,7 +1164,7 @@ var dic = {
 					if ( et == "search-start" ) {
 						dic.search_count++ ;
 					} else if ( et == "search-complete" ) {
-						if ( --dic.search_count == 0 ) {
+						if ( --dic.search_count === 0 ) {
 							$.event.trigger("search-complete-all" , term );
 						}
 					} else {
@@ -1166,12 +1180,12 @@ var dic = {
 				
 				body_hover: function() {
 				
-					if ( dic.user == 1 ) {
+					if ( dic.user.id == 1 ) {
 				
 						$("div.body").hoverIntent({
 							over: function() { $('.tools_right').fadeIn("fast"); },
 							interval: 100,
-							out: function() { $('.tools_right').fadeOut("fast") },
+							out: function() { $('.tools_right').fadeOut("fast"); },
 							timeout: 500
 						});
 					}
@@ -1179,16 +1193,16 @@ var dic = {
 				
 				options_hover: function() {
 					$('.options_container').hoverIntent ({
-						over: function() { dic.prefs.view.toggle(1) },
+						over: function() { dic.prefs.view.toggle(1); },
 						interval: 100,
-						out: function(event) { dic.prefs.view.toggle(0) },
+						out: function(event) { dic.prefs.view.toggle(0); },
 						timeout: 500
 					});
 				},
 				
 				slider_hover: function() {
 					$('#slider').hoverIntent ({
-						over: function() { $("#tip:hidden").slideDown("fast") },
+						over: function() { $("#tip:hidden").slideDown("fast"); },
 						interval: 20,
 						out: function() {},
 						timeout: 100
@@ -1209,11 +1223,11 @@ var dic = {
 					function enter() {
 
 						if ( dic.keydown.command ) {	// if command also down, submit
-							var id = dic.selectedInput.attr("id") ;
+							var id = dic.ui.selectedInput.attr("id") ;
 							if ( id == "def_new" ) {
-								dic.submit_def( dic.selectedInput ) ;
+								dic.submit_def( dic.ui.selectedInput ) ;
 							} else if ( id == "edit_old" ) {
-								id = dic.selectedInput.closest("span").attr("id") ;
+								id = dic.ui.selectedInput.closest("span").attr("id") ;
 								dic.submit_edit( id ) ; 
 							}
 						}
@@ -1226,105 +1240,105 @@ var dic = {
 						
 						switch(event.keyCode) {
 
-							case 13: 	// return
+							case 13:	// return
 
 								enter() ;
 								break ;
 								
-							case 16: 	// shift
+							case 16:	// shift
 							
-								dic.keydown["shift"] = true ;
+								dic.keydown.shift = true ;
 								break ;
 
-							case 17: 	// control
+							case 17:	// control
 
-								dic.keydown["control"] = true ;
+								dic.keydown.control = true ;
 								$("#term").blur();
 								break ;
 								
-							case 27: 	// esc
+							case 27:	// esc
 							
 								if ( $("#facebox").length ) {
 									$("#term").focus() ;
 								}
 								break;
 
-							case 93: 	// command (right)
+							case 93:	// command (right)
 
-								dic.keydown["command"] = true ;
+								dic.keydown.command = true ;
 								break ;
 
-							case 91: 	// command (left)
+							case 91:	// command (left)
 
-								dic.keydown["command"] = true ;
+								dic.keydown.command = true ;
 								break ;
 								
 								
-							case 48: 	// 0
+							case 48:	// 0
 							
 								if ( dic.keydown.control ) {
 									dic.view.toggle_dictionaries() ;
 								}
 								break ;
 								
-							case 49: 	// 1
+							case 49:	// 1
 							
 								if ( dic.keydown.f ) {
-									dic.prefs.fuzzy.level_set(1)
+									dic.prefs.fuzzy.level_set(1);
 								}
 								break;
 								
-							case 50: 	// 2
+							case 50:	// 2
 
 								if ( dic.keydown.f ) {
-									dic.prefs.fuzzy.level_set(2)
+									dic.prefs.fuzzy.level_set(2);
 								}								
 								break;
 								
-							case 51: 	// 3
+							case 51:	// 3
 
 								if ( dic.keydown.f ) {
-									dic.prefs.fuzzy.level_set(3)
+									dic.prefs.fuzzy.level_set(3);
 								}
 								break;
 
-							case 52: 	// 4
+							case 52:	// 4
 
 								if ( dic.keydown.f ) {
-									dic.prefs.fuzzy.level_set(4)
+									dic.prefs.fuzzy.level_set(4);
 								}
 								break;
 
-							case 66: 	// b
+							case 66:	// b
 							
 								if ( dic.keydown.o ) {
 									dic.prefs.view.checkbox_clicked( $('#starts') ) ;
 								}
 								break;
 							
-							case 68: 	// d
+							case 68:	// d
 
 								if ( dic.keydown.o ) {
 									dic.prefs.view.checkbox_clicked( $('#indef') ) ;
 								}
 								break;
 
-							case 69: 	// e
+							case 69:	// e
 
 								if ( dic.keydown.o ) {
 									dic.prefs.view.checkbox_clicked( $('#exact') ) ;
 								}
 								break;
 
-							case 70: 	// f
+							case 70:	// f
 
 								if ( dic.keydown.o ) {
 									dic.prefs.view.checkbox_clicked( $('#fuzzy') ) ;
 								}
-								dic.keydown["f"] = true ;
+								dic.keydown.f = true ;
 								break;
 
-							case 76: 	// l
+							case 76:	// l
 
 								if ( dic.keydown.control ) {
 									$(".tab").hide();
@@ -1334,30 +1348,30 @@ var dic = {
 								}
 								break ;
 
-							case 78: 	// n
+							case 78:	// n
 
 								if ( dic.keydown.control ) {
 									dic.definition.start_new() ;
 								}
 								break ;
 								
-							case 79: 	// o
+							case 79:	// o
 
 								if ( dic.keydown.control && dic.keydown.o ) {
 									dic.prefs.view.toggle() ;
 								} else if ( dic.keydown.control ) {
-									dic.keydown["o"] = true ;
+									dic.keydown.o = true ;
 								}
 								break ;
 
-							case 83: 	// s
+							case 83:	// s
 							
 								if ( dic.keydown.control ){
 									dic.prefs.storage.save();
 								}
 								break;
 
-							case 84: 	// t
+							case 84:	// t
 								if ( dic.keydown.o ) {
 									dic.prefs.view.checkbox_clicked( $('#interm') ) ;
 								}
@@ -1381,15 +1395,15 @@ var dic = {
 						
 						switch(event.keyCode) {
 							
-							case 16: 	// shift
+							case 16:	// shift
 
-								dic.keydown["shift"] = false ;
+								dic.keydown.shift = false ;
 								break ;
 							
 							case 17:
 
-								dic.keydown["control"] = false ;
-								dic.keydown["o"] = false ;
+								dic.keydown.control = false ;
+								dic.keydown.o = false ;
 								if ( !$("#facebox").is(":visible") ) {
 									$("#term").focus() ;
 								} else {
@@ -1399,29 +1413,29 @@ var dic = {
 
 							case 70:
 							
-								dic.keydown["f"] = dic.keydown.control ? true : false ;
+								dic.keydown.f = dic.keydown.control ? true : false ;
 								break;
 							
-							case 79: 	// o
+							case 79:	// o
 
-								dic.keydown["o"] = dic.keydown.control ? true : false ;
+								dic.keydown.o = dic.keydown.control ? true : false ;
 								break;
 								
 							case 93:
 
-								dic.keydown["command"] = false ;
+								dic.keydown.command = false ;
 								break ;	
 
 							case 91:
 
-								dic.keydown["command"] = false ;
+								dic.keydown.command = false ;
 								break ;				
 
 							default:
 
 								break;
 
-						} ;
+						}
 
 					});
 				},
@@ -1434,6 +1448,30 @@ var dic = {
 			
 			},
 			
+			other: function() {
+			
+				$('textarea, input').focus( function() {
+					$this = $(this);
+					dic.ui.selectedInput = $this ;
+					$this.select() ;
+				});
+				
+				$('textarea, input').blur( function() {
+					dic.ui.selectedInput = false ;
+				});
+				
+				$("#slider").slider({
+					animate: false, 
+					range: 'min',
+					stop: function(event,ui) {
+						dic.prefs.fuzzy.slider.stop(event,ui);
+					},
+					slide: function(event,ui) {
+						dic.prefs.fuzzy.slider.move(event,ui);
+					}
+				}) ;
+			},
+
 			win: {
 			
 				pop: function() {
@@ -1444,20 +1482,26 @@ var dic = {
 							
 							//console.log(e);
 							
-							if ( e.state != null && e.state != "" ) {
+							if ( e.state !== null && e.state !== "" ) {
 								var term = unescape(e.state),
 									store = sessionStorage.getItem( term ) ;
 									
 								$('#term').val( term ) ;
 								$('#main').html( store ) ;
+								$('title').html("ReSearch: " + term ) ;
 								
-								if ( !store ) { dic.search.go() }
+								if ( !store ) { dic.search.go(); }
 								
-								dic.binding.init();								
+								dic.ui.binding.init();								
 								
 							} else {
 
-								dic.clear_canvas();
+								dic.ui.clear_canvas();
+								$("#term").val('');
+
+								//if ( window.location.hash != "" ) {
+								//	dic.consume_external() ;
+								//}
 							}
 							
 						};
@@ -1479,36 +1523,22 @@ var dic = {
 				this.clicks.init() ;
 				this.win.init() ;
 				this.custom();
+				this.other();
 				
 			}
 			
 		} ;
 		
-		function consume_external() {
-			
-			var q = ( location.search == '' ) ? location.hash : location.search ;
-			if ( q != "" ) {
-				q = q.split(/#/) ;
-				q = q[1].replace( /\+/g , " " ) ;
-				$('#term').val(unescape(q)) ;
-				dic.search.go() ;
-			}	
-		}
-		
 		function load() {
 			$(".options_dicpic").load("./hyperactive.php?flag=source_list", function() {
 				
-				dic.user = dic.get_user() ;
+				dic.user.get() ;
 				
-				dic.prefs.selected = dic.prefs.storage.retrieve() ;
-
-				dic.prefs.apply( dic.prefs.selected ) ;
-
-				dic.prefs.view.humanize() ;
+				dic.prefs.init() ;
 
 				binding.init() ;
-
-				consume_external() ;
+				
+				dic.consume_external() ;
 			}) ;
 		}
 
@@ -1522,39 +1552,7 @@ var dic = {
 $(function() {
 	
 	$('#term').focus() ;
-	dic.selectedInput = $('#term') ;
-	
-	
-	$('textarea, input').focus( function() {
-		dic.selectedInput = $(this) ;
-		$(this).select() ;
-	});
-	
-	$('textarea, input').blur( function() {
-		dic.selectedInput = false ;
-	});
-	
-	$("#slider").slider({
-		animate: false, 
-		range: 'min',
-		stop: function(event,ui) {
-			dic.prefs.fuzzy.slider.stop(event,ui);
-		},
-		slide: function(event,ui) {
-			dic.prefs.fuzzy.slider.move(event,ui);
-		}
-	}) ;
-	
-	/* TODO: figure out autocomplete stuff
-	
-	$("#term").autocomplete( "./hyperactive.php?flag=ac_history", {
-		matchContains: true,
-		width: 200,
-		scroll: false
-	}).result(function(event,data,formatted){dic.search.go()});
-	*/
+	dic.ui.selectedInput = $('#term') ;
 	
 	dic.init() ;
-			
-	
 });

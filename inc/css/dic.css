@@ -101,6 +101,7 @@ div.options_text {
 	display:inline;
 	vertical-align: middle;
 	color: #9f9f9f;
+	overflow: hidden;
 }
 
 div.options_text strong { 
