@@ -1,4 +1,0 @@
-AuthUserFile /Users/jed/Documents/.htpasswd
-AuthType Basic
-AuthName "Dictionary"
-Require valid-user
