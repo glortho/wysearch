@@ -1,3 +1,5 @@
 Wylie search tool for looking up terms in MySQL-based dictionaries, FMSA-hosted FileMaker Pro databases, local Mac files via Spotlight, and a select number of web sites (TBRC, JSTOR, Dunhuang, Google, etc.) all at the same time.
 
 This is a recent repository but the code is old.
+
+Note that performance is currently bottlenecked by the massive task of sorting dictionary results according to the Tibetan alphabet. Turn this feature off for great performance boosts if English sorting is acceptable.
