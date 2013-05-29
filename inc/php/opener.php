@@ -2,6 +2,8 @@
 
 require_once './init.php';
 
+ini_set('memory_limit','300M');
+
 class opener extends template {
 
   const target_dir = "/Users/Shared/files/" ;
