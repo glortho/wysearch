@@ -34,7 +34,7 @@ class opener extends template {
       $this->output = $this->read_pdf() ;
       break;
 
-    case "evernote":
+    case "ennote":
 
       $this->output = $this->read_evernote() ;
       break;
@@ -81,7 +81,6 @@ class opener extends template {
   }
 
   function read_evernote() {
-
     $evernote_dir = "/Users/Shared/evernote/notes/" ;
 
     $data = shell_exec( "mdls -name kMDItemDisplayName -name kMDItemContentCreationDate \"$this->file\"" ) ;
@@ -89,7 +88,9 @@ class opener extends template {
     $file_data = array() ;
     foreach ( $data as $item ) {
       $item = explode( "= " , $item ) ;
-      $file_data[] = str_replace( "\"" , "" , $item[1] ) ;
+      if( isset($item[1]) ) {
+        $file_data[] = str_replace( "\"" , "" , $item[1] ) ;
+      }
     }
     $created = $file_data[0] ;
     $name = $file_data[1] ;
