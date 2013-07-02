@@ -1327,7 +1327,7 @@ scroll: false
               }
               break;
 
-              case 69:	// e
+              case 88:	// e
 
                 if ( dic.keydown.o ) {
                 dic.prefs.view.checkbox_clicked( $('#exact') ) ;
