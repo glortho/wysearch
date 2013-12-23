@@ -1,3 +1,5 @@
 .DS*
 .htaccess
 conf.php
+*.swp
+*.un~

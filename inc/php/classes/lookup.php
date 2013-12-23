@@ -68,11 +68,11 @@ class lookup extends template {
 
 		if ( $this->data['exact'] == "true" ) { // exact
 
-			$this->sql .= ( $qregex[0] ) ? "$f REGEXP \"^$q$\"" : "$f = \"$q\"" ;
+			$this->sql .= ( isset($qregex[0]) ) ? "$f REGEXP \"^$q$\"" : "$f = \"$q\"" ;
 
 		} else if ( $this->data['starts'] == "true" ) {	// starts with
 
-			$this->sql .= ( $qregex[0] ) ? "$f REGEXP \"^$q\"" : "$f like \"$q%\"" ;
+			$this->sql .= ( isset($qregex[0]) ) ? "$f REGEXP \"^$q\"" : "$f like \"$q%\"" ;
 
 		} else {
 

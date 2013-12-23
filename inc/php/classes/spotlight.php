@@ -99,30 +99,46 @@ class spotlight extends template {
 
 		$outarr = array() ;
 
-		$limiter = ( $user->get() == 1 ) ? "" : ""; //"&websearch AND " ;
+		//$limiter = ( $user->get() == 1 ) ? "" : ""; //"&websearch AND " ;
 
-		$scr = "/usr/bin/mdfind \"" . $limiter . "\\\"$this->q\\\"\" | sort" ;
+		$scr = "/usr/bin/mdfind \\\"$this->q\\\" | sort" ;
 
-		//echo "$scr";
+    //echo "$scr";
 
 		exec( $scr , $outarr , $res ) ;
 
-		echo $res;
+    //print_r($outarr);
+		//echo $res;
 
 		$this->data = array() ;
 
 		$this->count = 0 ;
 
 		foreach ( $outarr as $file ) {
-			$data = shell_exec( "mdls -name \"kMDItemDisplayName\" -name \"kMDItemKind\" \"$file\"" ) ;
+			$data = shell_exec( "mdls -name kMDItemDisplayName -name kMDItemKind \"$file\"" ) ;
 			//echo "$data<br>";
 			$data = explode( "\n" , $data ) ;
-			$file_data = array() ;
+			$file_data = [] ;
+      $val = '';
 			foreach ( $data as $item ) {
 				$item = explode( "= " , $item ) ;
-				$file_data[] = str_replace( "\"" , "" , $item[1] ) ;
+        if( isset($item[1]) ) {
+          $val = $item[1];
+          if( strpos($item[0], 'kMDItemKind') !== false ) {
+            if( strpos($val, 'PDF') !== false ) {
+              $val = '   PDF';
+            } elseif ( strpos($val, 'Word') !== false ) {
+              $val = '  MS Word';
+            } elseif ( strpos($val, 'Evernote') !== false ) {
+              $val = ' Evernote';
+            }
+          }
+          $file_data[] = str_replace( "\"" , "" , $val) ;
+        }
 			}
-			$this->data[$file_data[1]][] = array( "file" => $file , "display" => $file_data[0] ) ;
+      if( isset($file_data[1]) ) {
+        $this->data[$file_data[1]][] = array( "file" => $file , "display" => $file_data[0] ) ;
+      }
 			$this->count++ ;
 
 		}
