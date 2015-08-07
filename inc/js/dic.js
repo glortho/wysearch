@@ -575,7 +575,7 @@ scroll: false
         if ( dic.user.id == 1 ) {
           //out += "<div class='label' id='fmp_label'><img class='icon' src='./images/fmp.gray.png' width='30' height='30' /> <span class='label_header'>FileMaker ( <img class='indicator' src='./images/indicator.gif' /> )</span></div>" ;
         }
-        out += "<div class='label' id='spot_label'><img class='icon' src='./images/spot.gray.jpeg' width='30' height='30' /> <span class='label_header'>Spotlight ( <img class='indicator' src='./images/indicator.gif' /> )</span></div>" ;
+        //out += "<div class='label' id='spot_label'><img class='icon' src='./images/spot.gray.jpeg' width='30' height='30' /> <span class='label_header'>Spotlight ( <img class='indicator' src='./images/indicator.gif' /> )</span></div>" ;
         return out ;
       }	
 
@@ -593,7 +593,7 @@ scroll: false
           //search_filemaker( term, options ) ;
         }
 
-        search_spotlight( term , options ) ;
+        //search_spotlight( term , options ) ;
 
         //search internet sources (may need to put this back in search_dictionary before dic.ui.binding.init())
 
@@ -734,11 +734,11 @@ scroll: false
 
           if ( caller.toString().indexOf("( e )") > -1 || window.location.hash == "#" + term ) {
             //console.log("replace: " + term)
-            window.history.replaceState( term , term , "/dic/#" + term ) ;
+            window.history.replaceState( term , term , "/#" + term ) ;
 
           } else {
             //console.log("push: " + term)
-            window.history.pushState( term , term , "/dic/#" + term ) ;
+            window.history.pushState( term , term , "/#" + term ) ;
           }
 
           //dic.search.last_term = term ;

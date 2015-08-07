@@ -2,17 +2,17 @@ body {
 	overflow-y: scroll ;
 }
 
-a:link, a:visited, a:active { 
+a:link, a:visited, a:active {
 	text-decoration: none;
-	color: #31BFF7 ;	
+	color: #31BFF7 ;
 }
 
-table.defs { 
+table.defs {
 	width: 100%;
-	border: 0pt solid ;	
+	border: 0pt solid ;
 }
 
-body, div, td { 
+body, div, td {
 	vertical-align: top;
 	font-family: "lucida grande";
 	font-size: 0.8em ;
@@ -41,7 +41,7 @@ div.body {
 	-moz-box-shadow: 0 0 1px #666;
 }
 
-div.content { 
+div.content {
 	font-size: 1em;
 	min-width: 500px;
 }
@@ -59,14 +59,14 @@ div.help-text {
 	font-size: 1.1em;
 }
 
-div.option_set { 
+div.option_set {
 	font-size: 1.2em;
 	margin-bottom: 7px ;
 	padding: 1px;
-	
+
 }
 
-div.options { 
+div.options {
 	z-index: -1;
 	border: 1pt #c0c0c0 solid;
 	padding: 2px;
@@ -82,20 +82,20 @@ div.options {
 	-moz-box-shadow: 0 0 2px #666;
 }
 
-div.options_container { 
+div.options_container {
 	background: #fff;
 }
 
-div.options_dicpic { 
+div.options_dicpic {
 	float:right;
 	margin: 4px 4px 0px 2px;
 	font-size: 1em;
 }
 
-div.options_text { 
+div.options_text {
 	position: absolute;
 	left: 244px ;
-	top: 9px;
+	top: 5px;
 	margin-left: 2px;
 	font-size: 1.4em;
 	display:inline;
@@ -104,25 +104,25 @@ div.options_text {
 	overflow: hidden;
 }
 
-div.options_text strong { 
+div.options_text strong {
 	color: #999;
 	font-size: 1.5em ;
 	font-weight: normal;
 	vertical-align: middle;
 }
 
-p { 
+p {
 	padding-bottom: 0px ;
 	line-height: 1.5em
 }
 
-.addspan { 
+.addspan {
 	position: absolute;
 	z-index: 100 ;
 	cursor: pointer;
 }
 
-.big { 
+.big {
 	position: absolute;
 	left: 0.5em;
 	color: #bbb;
@@ -133,40 +133,40 @@ p {
 	padding-top: 40px;
 }
 
-.delete{ 
+.delete{
 	margin-right: 5px ;
 }
 
-.definition { 
+.definition {
 	color: #505050 ;
 }
 
-.def_spacer { 
+.def_spacer {
 	max-width: 50px;
 	width: 50px;
 }
 
-.dic_source { 
+.dic_source {
 	font-size: 1.2em;
 }
 
-.exp { 
+.exp {
 	position: relative;
 	top: 1px;
 }
 
-.field { 
+.field {
 	display: inline;
 }
 
-.fmp_field_label { 
+.fmp_field_label {
 	color: #bbb ;
 	text-align: right ;
 	padding: 0.2em 0.4em 0.2em 0em;
 	font-size: 1em;
 }
 
-.fmp_field_value { 
+.fmp_field_value {
 	text-align: left ;
 	color: #505050 ;
 	padding: 0.2em 0em 0.2em 0em;
@@ -175,73 +175,73 @@ p {
 
 .fmp_header {}
 
-.fmp_row { 
+.fmp_row {
 	padding: 0.5em 0em 0em 0em;
 	border:1pt #bbb;
 	border-top-style: solid;
 	color: #505050 ;
 }
 
-.fmp_spacer { 
+.fmp_spacer {
 	padding: 0.5em 2em 0em 0em;
 	color: #bbb ;
 	vertical-align: middle;
 	text-align: right;
 }
 
-.fmdot { 
+.fmdot {
 	margin-right:0.5em
 }
 
-.highlight { 
+.highlight {
 	background-color: #ccFFFF;
 	font-weight: bold;
 }
 
-.icon { 
+.icon {
 	cursor: pointer;
 	vertical-align: middle ;
 	margin-right: 0.4em;
 }
 
-.indicator { 
+.indicator {
 	vertical-align: middle;
 }
 
-.label { 
+.label {
 	overflow-x: hidden;
 	font-size: 1.3em ;
 	font-weight: bold ;
 	margin: 1em 0em 0.5em 0.5em;
 }
 
-.label_header { 
+.label_header {
 	cursor: pointer;
 	font-size: 1.15em ;
 	color: #aaa;
 	white-space: nowrap
 }
 
-.next { 
+.next {
 	cursor: pointer ;
 }
 
-.prev { 
+.prev {
 	cursor: pointer ;
 }
 
-.results { 
+.results {
 	font-size: 9pt;
 	line-height: 16px;
 	color: #505050 ;
 	margin: 0em 0.5em 0.1em 0em ;
 }
 
-.results_group { 
+.results_group {
 	display: none;
 }
 
-.results_header { 
+.results_header {
 	vertical-align: top;
 	overflow: hidden;
 	color: #bbb ;
@@ -250,22 +250,22 @@ p {
 	cursor: pointer;
 }
 
-.results_table { 
+.results_table {
 	display: none ;
 	margin: 0.3em 0em 0em 2.75em;
 }
 
-.results_title { 
+.results_title {
 	font-size: 9pt;
 	margin: 0.7em 0em 0em 0em;
 }
 
-.results_url { 
+.results_url {
 	color: #bbb ;
 	font-size: 8pt
 }
 
-.small { 
+.small {
 	color: #888;
 	font-size: 11pt;
 	text-align: center ;
@@ -273,20 +273,20 @@ p {
 	margin-top: 80px;
 }
 
-.source { 
+.source {
 	color: #bbb ;
 	font-style: none ;
 	float: left ;
 	font-size: 1em;
 }
 
-.spotlight_file { 
+.spotlight_file {
 	color: #505050 ;
 	font-style: none ;
 	font-size: 2em;
 }
 
-.spotlight_kind { 
+.spotlight_kind {
 	color: #bbb ;
 	font-style: none ;
 	font-size: 1.1em;
@@ -294,31 +294,31 @@ p {
 	cursor: pointer;
 }
 
-.spotlight_row { 
+.spotlight_row {
 	padding: 0.2em 0em 0.2em 0em ;
 	font-size: 1em
 }
 
-.summary { 
+.summary {
 	float: none;
 	border: 1pt #f0f0f0;
 	border-bottom-style: none;
 	padding: 10px 0px 10px 2px;
 }
 
-.summary_index { 
+.summary_index {
 	width:4%;
 	float: left !important;
 	font-size: 1.3em;
 	font-weight: bold;
 }
 
-.summary_snippet { 
+.summary_snippet {
 	width:96%;
 	font-size: 1.3em;
 }
 
-.tab { 
+.tab {
 	display: none;
 	position: absolute;
 	left: 0em;
@@ -330,12 +330,12 @@ p {
 	height: 0.5em ;
 }
 
-.tip_item { 
+.tip_item {
 	font-size: 2em;
 	padding: 0.3em;
 }
 
-.tools_right { 
+.tools_right {
 	z-index: 99;
 	display: inline;
 	position: absolute;
@@ -345,42 +345,42 @@ p {
 	font-size: 1em;
 }
 
-.vote_info_header { 
+.vote_info_header {
 	font-size: 1.3em;
 	border: 1pt #bbb;
 	border-bottom-style: solid;
 }
 
-.vote_info_none { 
+.vote_info_none {
 	font-style: italic;
 }
 
-.vote_info_table { 
+.vote_info_table {
 	width: 100%;
 	margin-bottom: 10px;
 }
 
-.vote_info_table th { 
+.vote_info_table th {
 	padding: 4px;
 }
 
-.vote_info_table td { 
+.vote_info_table td {
 	padding: 4px !important;
 	font-size: 1.1em;
 }
 
-.vote_info_dts { 
+.vote_info_dts {
 	width: 150px;
 }
 
-.votes { 
+.votes {
 	display: none;
 	color: #bbb ;
 	font-style: none ;
 	font-size: 0.95em;
 }
 
-#external { 
+#external {
 	z-index: -3;
 	float: right ;
 	width: 31em ;
@@ -389,19 +389,19 @@ p {
 	display: block;
 }
 
-#facebox .content { 
+#facebox .content {
 	font-size: 1.7em;
 }
 
-#dic_table { 
+#dic_table {
 	display: block;
 }
 
-#more { 
+#more {
 	cursor: pointer;
 }
 
-#output { 
+#output {
 	z-index: -3;
 	overflow-x: hidden;
 	margin: 1em 34em 1em 1em ;
@@ -409,7 +409,7 @@ p {
 	left: 0px;
 }
 
-#term { 
+#term {
 	padding: 0.25em;
 	font-size: 1.2em ;
 	font-weight: bold;
@@ -417,7 +417,7 @@ p {
 	border: 1pt dashed #bbb;
 }
 
-#tip { 
+#tip {
 	z-index: -2;
 	display: none;
 	position: absolute;
@@ -433,6 +433,6 @@ p {
 	-moz-box-shadow: 0 0 1px #666;
 }
 
-#vote_info_down_header { 
+#vote_info_down_header {
 	padding-top: 12px;
 }
